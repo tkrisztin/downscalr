@@ -3,6 +3,10 @@ Type: Package
 Title: Downscaling land-use change projections
 Version: 0.1.0
 Author: Tamás Krisztin, Michael Wögerer
+Authors@R: c(
+    person("Krisztin", "Tamás", ,"krisztin@iiasa.ac.at", c("aut", "cre")),
+    person("Wögerer", "Michael", ,"wogerer@iiasa.ac.at", "aut")
+    )
 Maintainer: Tamás Krisztin <krisztin@iiasa.ac.at>
 Description: For high-resolution projections of future land-use change IAMs often rely on downscaled projections. This package provides econometric models for prior estimation and a flexible, transparent and easy to use framework to downscale such projections. 
 License: MIT
