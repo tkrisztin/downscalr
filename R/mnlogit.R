@@ -14,6 +14,10 @@
 #' * \code{marginal_fx} A k x p x (niter - nburn dimensions) array containing posterior draws of marginal effects.
 #' * \code{X, Y, baseline} The matrices of explanatory and dependent variables, as defined above and the baseline class.
 #'
+#' @import MASS
+#' @import BayesLogit
+#' @export mnlogit
+#'
 #' @examples
 #' n <- 100
 #' p <- 3

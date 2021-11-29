@@ -4,7 +4,7 @@
 \alias{mnlogit}
 \title{Bayesian logit model with Pólya Gamma prior with MCMC}
 \usage{
-mnlogit(X, Y, baseline = ncol(Y), ntot = 1000, nburn = 500, A0 = 10^4)
+mnlogit(X, Y, baseline = ncol(Y), niter = 1000, nburn = 500, A0 = 10^4)
 }
 \arguments{
 \item{X}{An n by k matrix of explanatory variables}
@@ -13,7 +13,7 @@ mnlogit(X, Y, baseline = ncol(Y), ntot = 1000, nburn = 500, A0 = 10^4)
 
 \item{baseline}{Baseline class for estimation. Parameters will be set to zero. Defaults to the p-th column.}
 
-\item{ntot}{Total number of MCMC draws}
+\item{niter}{Total number of MCMC draws}
 
 \item{nburn}{Burn-in draws for MCMC}
 
@@ -22,8 +22,8 @@ mnlogit(X, Y, baseline = ncol(Y), ntot = 1000, nburn = 500, A0 = 10^4)
 \value{
 A list containing
 \itemize{
-\item \code{postb} A k x p x (ntot - nburn dimensions) array containing posterior draws of the slope coefficients.
-\item \code{marginal_fx} A k x p x (ntot - nburn dimensions) array containing posterior draws of marginal effects.
+\item \code{postb} A k x p x (niter - nburn dimensions) array containing posterior draws of the slope coefficients.
+\item \code{marginal_fx} A k x p x (niter - nburn dimensions) array containing posterior draws of marginal effects.
 \item \code{X, Y, baseline} The matrices of explanatory and dependent variables, as defined above and the baseline class.
 }
 }
@@ -34,14 +34,14 @@ Bayesian logit model with Pólya Gamma prior with MCMC
 Performs MCMC estimation of a multinomial logit model as in Polson et al. (2012)
 }
 \examples{
-n = 100
-p = 3
-k = 2
-X = cbind(1,matrix(rnorm(n*(k-1),0,2),n,k-1))
-BETA <- matrix(sample(c(-3:3),k*p,replace=TRUE)  , k, p)
-BETA[,p] = 0
-Y = exp(X \%*\% BETA) / rowSums(exp(X \%*\% BETA))
-res1 = mnlogit(X,Y)
+n <- 100
+p <- 3
+k <- 2
+X <- cbind(1, matrix(rnorm(n * (k - 1), 0, 2), n, k - 1))
+BETA <- matrix(sample(c(-3:3), k * p, replace = TRUE), k, p)
+BETA[, p] <- 0
+Y <- exp(X \%*\% BETA) / rowSums(exp(X \%*\% BETA))
+res1 <- mnlogit(X, Y)
 print(BETA)
-print(apply(res1$postb,c(1,2),mean))
+print(apply(res1$postb, c(1, 2), mean))
 }
