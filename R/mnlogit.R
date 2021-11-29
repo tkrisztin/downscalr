@@ -7,7 +7,7 @@
 #' @param nburn Burn-in draws for MCMC
 #' @param A0 Prior for slope coefficients
 #'
-#'@details Performs MCMC estimation of a multinomial logit model as in Polson et al. (2012)
+#' @details Performs MCMC estimation of a multinomial logit model as in Polson et al. (2012)
 #'
 #' @return A list containing
 #' * \code{postb} A k x p x (niter - nburn dimensions) array containing posterior draws of the slope coefficients.
@@ -15,16 +15,16 @@
 #' * \code{X, Y, baseline} The matrices of explanatory and dependent variables, as defined above and the baseline class.
 #'
 #' @examples
-#'n = 100
-#'p = 3
-#'k = 2
-#'X = cbind(1,matrix(rnorm(n*(k-1),0,2),n,k-1))
-#'BETA <- matrix(sample(c(-3:3),k*p,replace=TRUE)  , k, p)
-#'BETA[,p] = 0
-#'Y = exp(X %*% BETA) / rowSums(exp(X %*% BETA))
-#'res1 = mnlogit(X,Y)
-#'print(BETA)
-#'print(apply(res1$postb,c(1,2),mean))
+#' n <- 100
+#' p <- 3
+#' k <- 2
+#' X <- cbind(1, matrix(rnorm(n * (k - 1), 0, 2), n, k - 1))
+#' BETA <- matrix(sample(c(-3:3), k * p, replace = TRUE), k, p)
+#' BETA[, p] <- 0
+#' Y <- exp(X %*% BETA) / rowSums(exp(X %*% BETA))
+#' res1 <- mnlogit(X, Y)
+#' print(BETA)
+#' print(apply(res1$postb, c(1, 2), mean))
 mnlogit <- function(X, Y, baseline = ncol(Y),
                     niter = 1000, nburn = 500, A0 = 10^4) {
   n <- nrow(X)
@@ -74,7 +74,7 @@ mnlogit <- function(X, Y, baseline = ncol(Y),
       postb[, , s] <- curr.beta
       curr.xb <- X %*% curr.beta
     }
-    utils::setTxtProgressBar(pb,iter)
+    utils::setTxtProgressBar(pb, iter)
   }
   close(pb)
   ### marginal effects calculations
