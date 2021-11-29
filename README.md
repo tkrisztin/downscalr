@@ -5,4 +5,4 @@ A package for high-resolution simulation of land-use change projections, with su
 
 
       # install.packages("devtools")
-      devtools::install_github("tkrisztin/downscalr")
+      devtools::install_github("tkrisztin/downscalr",ref="HEAD")
