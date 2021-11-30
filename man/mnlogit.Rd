@@ -17,7 +17,7 @@ mnlogit(X, Y, baseline = ncol(Y), niter = 1000, nburn = 500, A0 = 10^4)
 
 \item{nburn}{Burn-in draws for MCMC}
 
-\item{A0}{Prior for slope coefficients}
+\item{A0}{Prior variance scalar for all slope coefficients}
 }
 \value{
 A list containing
@@ -31,7 +31,7 @@ A list containing
 Bayesian logit model with Pólya Gamma prior with MCMC
 }
 \details{
-Performs MCMC estimation of a multinomial logit model as in Polson et al. (2012)
+MCMC estimation of a multinomial logit model following Polson et al. (2013).
 }
 \examples{
 n <- 100
@@ -44,4 +44,7 @@ Y <- exp(X \%*\% BETA) / rowSums(exp(X \%*\% BETA))
 res1 <- mnlogit(X, Y)
 print(BETA)
 print(apply(res1$postb, c(1, 2), mean))
+}
+\references{
+Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for logistic models using Polya-Gamma latent variables. Journal of the American statistical Association 108.504 (2013): 1339-1349.
 }

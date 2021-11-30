@@ -10,7 +10,7 @@ Maintainer: Tamás Krisztin <krisztin@iiasa.ac.at>
 Description: For high-resolution projections of future land-use change IAMs often rely on downscaled projections. This package provides econometric models for prior estimation and a flexible, transparent and easy to use framework to downscale such projections. 
 License: MIT + file LICENSE
 Encoding: UTF-8
-Imports: MASS, BayesLogit
+Imports: MASS, BayesLogit, nloptr
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2

@@ -5,14 +5,16 @@
 #' @param baseline Baseline class for estimation. Parameters will be set to zero. Defaults to the p-th column.
 #' @param niter Total number of MCMC draws
 #' @param nburn Burn-in draws for MCMC
-#' @param A0 Prior for slope coefficients
+#' @param A0 Prior variance scalar for all slope coefficients
 #'
-#' @details Performs MCMC estimation of a multinomial logit model as in Polson et al. (2012)
+#' @details MCMC estimation of a multinomial logit model following Polson et al. (2013).
 #'
 #' @return A list containing
 #' * \code{postb} A k x p x (niter - nburn dimensions) array containing posterior draws of the slope coefficients.
 #' * \code{marginal_fx} A k x p x (niter - nburn dimensions) array containing posterior draws of marginal effects.
 #' * \code{X, Y, baseline} The matrices of explanatory and dependent variables, as defined above and the baseline class.
+#'
+#' @references Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for logistic models using Polya-Gamma latent variables. Journal of the American statistical Association 108.504 (2013): 1339-1349.
 #'
 #' @import MASS
 #' @import BayesLogit
