@@ -20,7 +20,7 @@ First a prior model needs to be run. This can be done using the mnlogit() functi
 
 For additional guidance see the DownScale package documentation here: https://bit.ly/3fiLG3u
       
-# Additional informatio 
+# Additional information
 
 *Downscalr was developed  with the financial support of the European Union’s Partnership Instrument and the German Federal Ministry for the Environment, Nature Conservation, and Nuclear Safety (BMU) in the context of the International Climate Initiative (IKI), particularly the SPIPA Argentina project.*
 
