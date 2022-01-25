@@ -44,6 +44,17 @@ Y <- exp(X \%*\% BETA) / rowSums(exp(X \%*\% BETA))
 res1 <- mnlogit(X, Y)
 print(BETA)
 print(apply(res1$postb, c(1, 2), mean))
+
+require(tidyr)
+Y = dplyr::filter(argentina_luc,lu.from == "Cropland" & Ts == 2000) \%>\%
+   pivot_wider(names_from = lu.to)
+X = argentina_df$xmat \%>\% tidyr::pivot_wider(names_from = "ks") \%>\%
+   dplyr::arrange(match(ns,Y$ns))
+Y = Y \%>\% dplyr::select(-c(lu.from,Ts,ns))
+X = X \%>\% dplyr::select(-c(ns))
+res1 <- mnlogit(as.matrix(X), as.matrix(Y),baseline = which(colnames(Y) == "Cropland"),
+          niter = 100,nburn = 50)
+print(apply(res1$postb, c(1, 2), mean))
 }
 \references{
 Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for logistic models using Polya-Gamma latent variables. Journal of the American statistical Association 108.504 (2013): 1339-1349.

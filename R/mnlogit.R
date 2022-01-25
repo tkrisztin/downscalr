@@ -31,6 +31,17 @@
 #' res1 <- mnlogit(X, Y)
 #' print(BETA)
 #' print(apply(res1$postb, c(1, 2), mean))
+#'
+#' require(tidyr)
+#' Y = dplyr::filter(argentina_luc,lu.from == "Cropland" & Ts == 2000) %>%
+#'    pivot_wider(names_from = lu.to)
+#' X = argentina_df$xmat %>% tidyr::pivot_wider(names_from = "ks") %>%
+#'    dplyr::arrange(match(ns,Y$ns))
+#' Y = Y %>% dplyr::select(-c(lu.from,Ts,ns))
+#' X = X %>% dplyr::select(-c(ns))
+#' res1 <- mnlogit(as.matrix(X), as.matrix(Y),baseline = which(colnames(Y) == "Cropland"),
+#'           niter = 100,nburn = 50)
+#' print(apply(res1$postb, c(1, 2), mean))
 mnlogit <- function(X, Y, baseline = ncol(Y),
                     niter = 1000, nburn = 500, A0 = 10^4) {
   n <- nrow(X)
