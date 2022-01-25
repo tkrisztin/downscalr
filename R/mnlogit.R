@@ -16,7 +16,7 @@
 #'
 #' @references Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for logistic models using Polya-Gamma latent variables. Journal of the American statistical Association 108.504 (2013): 1339-1349.
 #'
-#' @import MASS
+#' @importFrom MASS mvrnorm
 #' @import BayesLogit
 #' @export mnlogit
 #'

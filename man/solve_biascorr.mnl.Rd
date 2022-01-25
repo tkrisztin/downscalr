@@ -11,28 +11,28 @@ solve_biascorr.mnl(
   betas,
   priors = NULL,
   restrictions = NULL,
-  options = get_opts.solve_biascorr()
+  options = solve_biascorr_control()
 )
 }
 \arguments{
-\item{targets}{A p x 1  vector of downscaling targets (with at least one targets >= 0)}
+\item{targets}{A dataframe with columns lu.from (optional), lu.to and value (all targets >= 0)}
 
-\item{areas}{An n x 1  vector of grid areas, with all areas >= 0 and with sum(areas) >= sum(targets)}
+\item{areas}{A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
 
-\item{xmat}{An n x k  matrix of explanatory variables}
+\item{xmat}{A dataframe of explanatory variables with columns ks and value}
 
-\item{betas}{A k x p1 matrix (with p = p1 + p2)}
+\item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value}
 
-\item{priors}{A n x p2 matrix of priors (with priors >= 0)}
+\item{priors}{A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)}
 
-\item{restrictions}{A n x p binary matrix of restrictions; if restrictions are one, the MNL function is set to zero}
+\item{restrictions}{A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
 
-\item{options}{A list with solver options. Call \code{\link{get_opts.solve_biascorr}} for default options and for more detail.}
+\item{options}{A list with solver options. Call \code{\link{solve_biascorr_control}} for default options and for more detail.}
 }
 \value{
 A list containing
 \itemize{
-\item \code{out.res} A n x p matrix of area allocations
+\item \code{out.res} A \code{n x p} matrix of area allocations
 \item \code{out.solver} A list of the solver output
 }
 }
@@ -40,7 +40,7 @@ A list containing
 Bias correction solver for multinomial logit type problems
 }
 \details{
-Given p targets matches either the projections from an MNL-type model or exogeneous priors.
+Given \code{p} targets matches either the projections from an MNL-type model or exogeneous priors.
 
 min \deqn{\sum  (  z ij areas_i  - targets_j )^2}
 s.t. \deqn{ z_ij = \mu_ij}
@@ -51,32 +51,12 @@ with \eqn{i = 1,...,n} and  \eqn{j = 1,...,n}. #' For each target either betas a
 
 When \code{cutoff} is specified, \eqn{z_ij} is defined as above if \eqn{mu_ij > cutoff}. If \eqn{mu_ij <= cutoff} then \eqn{z_ij = 0}. Per default \code{cutoff} is set to zero.
 
+Targets should be specified in a dataframe with at least a lu.to and a value column. All targets must be larger or equal to zero. If an lu.from column is supplied it has to be specified in all arguments. In this case the bias correction is performed for all lu.from classes.
+
+Areas correspond to either an areas per pixel (ns), with value or optionally the are of lu.from in a pixel. All areas must be larger The function expects lu.from
+
 Restrictions are binary and optional. If restrictions are supplied, in case \eqn{restrictions_ij = 1} then  \eqn{z_ij = 0}.
 }
 \examples{
 ## A basic example
-lu.to = c("crop","grass","forest","other")
-n <- 100; k = 3
-areas = 5+runif(n)
-targets = runif(length(lu.to),1,sum(areas) / length(lu.to))
-names(targets) = lu.to
-betas = array(sample(-2:2,k*length(lu.to),replace = TRUE),c(k,length(lu.to)))
-row.names(betas) = 1:k; colnames(betas) = lu.to
-xmat = matrix(rnorm(n*k),n,k)
-row.names(xmat) = 1:n; colnames(xmat) = 1:k
-res1 = solve_biascorr.mnl(targets = targets,areas = areas,xmat = xmat,betas = betas)
-
-## An example using priors
-betas2 = betas[,-1]
-priors = matrix(runif(n),n,1); colnames(priors) = lu.to[1]
-res2 = solve_biascorr.mnl(targets = targets,areas = areas,xmat = xmat,
-                         betas = betas2,priors = priors)
-
-## An example with restrictions
-restrictions = matrix(0,n,length(lu.to));
-row.names(restrictions) = 1:n; colnames(restrictions) = lu.to
-restrictions[,2] = sample(c(0,1),replace = TRUE,size = n)
-res3 = solve_biascorr.mnl(targets = targets,areas = areas,xmat = xmat,
-                         betas = betas2,priors = priors,
-                         restrictions = restrictions)
 }
