@@ -1,0 +1,102 @@
+#' Downscaling of land-use (change) data
+#'
+#' @param targets A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)
+#' @param start.areas  A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
+#' @param xmat A dataframe of explanatory variables with columns ks and value
+#' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
+#' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must dataframe with columns ns, lu.from & value defaults to areas.sum_to() which sums over lu.to
+#' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
+#' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
+#' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
+#' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
+#' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
+#' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
+#'
+#' @details Given \code{p} targets matches either the projections from an MNL-type model or exogenous priors.
+#'
+#' @return A list containing
+#' * \code{out.res} Dataframe with columns times, ns, lu.from, lu.to & value (area allocation)
+#' * \code{out.solver} A list of the solver output
+#'
+#' @export downscale
+#' @import nloptr
+#' @import tidyr
+#' @import dplyr
+#' @import tibble
+#'
+#' @examples
+#' ## A basic example
+downscale = function(targets,start.areas,xmat,betas,
+                     areas.update.fun = areas.sum_to,
+                     xmat.coltypes = rep("static",ncol(xmat)),
+                     xmat.proj = NULL,xmat.dyn.fun = NULL,
+                     priors = NULL,restrictions=NULL,
+                     options = downscale_control()) {
+  # Handle input checking
+  err.txt = options$err.txt
+  err_check_inputs(targets,start.areas,xmat,betas,
+                   areas.update.fun,xmat.coltypes,
+                   xmat.proj,xmat.dyn.fun,
+                   priors,restrictions,err.txt)
+  targets = complete_targets(targets)
+  areas = complete_areas(areas)
+  xmat = complete_xmat(xmat)
+  betas = complete_betas(betas)
+  if (!is.null(priors)) {priors = complete_priors(priors)}
+  if (!is.null(restrictions)) {priors = complete_restrictions(restrictions)}
+  if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj()}
+
+  # save column types of xmat
+  if (any(xmat.coltypes == "projected")) {proj.colnames = colnames(xmat)[xmat.coltypes == "projected"]}
+  if (any(xmat.coltypes == "dynamic")) {dyn.colnames = colnames(xmat)[xmat.coltypes == "dynamic"]}
+
+  # ensure correct ordering
+  # TODO
+
+  # Set starting values
+  curr.areas = start.areas
+  curr.xmat = xmat
+  curr.priors = priors
+  curr.restrictions = restrictions
+
+  times = unique(targets$times)
+  out.solver <- list()
+  for (curr.time in times) {
+    # Extract targets
+    curr.targets = filter(targets,times == curr.time) %>% select(-times)
+
+    # res = downscale.mnl.multeq(targets = curr.targets,areas = curr.areas,
+    #                            xmat = curr.xmat,betas = betas,priors = curr.priors,
+    #                            restrictions=curr.restrictions,err.txt = paste0(curr.time,"-"))
+    res = solve_biascorr.mnl(targets,areas,xmat,betas,priors,restrictions,options)
+    out.solver[[curr.time]] = res$out.solver
+
+    # update curr.area
+    curr.areas = areas.update.fun(res, curr.areas, priors, xmat.proj)
+
+    # update projected xmats
+    if (any(xmat.coltypes == "projected")) {
+      tmp.proj = xmat.proj %>%
+        filter(times == curr.time) %>%
+        dplyr::select(-times) %>%
+        tidyr::pivot_wider(names_from = .data$ks,values_from = "value")
+      xmat[,proj.colnames] = as.matrix(tmp.proj[match(row.names(xmat),tmp.proj$ns),proj.colnames])
+    }
+    # update dynamic xmats
+    if (any(xmat.coltypes == "dynamic")) {
+      tmp.proj = xmat.dyn.fun(res, curr.areas, priors, xmat, xmat.proj)
+      xmat[,dyn.colnames] = as.matrix(tmp.proj[,dyn.colnames])
+    }
+    # aggregate results over dataframes
+    res.agg = data.frame(times = curr.time,res$out.res)
+    if(curr.time==times[1]){out.res <- res.agg
+    } else {
+      out.res = bind_rows(out.res,res.agg)
+    }
+  }
+
+  # Add back default columns
+  # TODO
+
+  return(list(out.res = out.res,out.solver = out.solver))
+}

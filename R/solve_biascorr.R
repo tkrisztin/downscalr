@@ -6,9 +6,11 @@
 #' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
 #' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
 #' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
-#' @param options A list with solver options. Call \code{\link{solve_biascorr_control}} for default options and for more detail.
+#' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
 #'
 #' @details Given \code{p} targets matches either the projections from an MNL-type model or exogeneous priors.
+#'
+#' You should not call this functions directly, call \code{\link{downscale}} instead.
 #'
 #' min \deqn{\sum  (  z ij areas_i  - targets_j )^2}
 #' s.t. \deqn{ z_ij = \mu_ij}
@@ -38,43 +40,12 @@
 #' @examples
 #' ## A basic example
 solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restrictions=NULL,
-                              options = solve_biascorr_control()) {
+                              options = downscale_control()) {
   err.txt = options$err.txt;
-  if (!"lu.from" %in% colnames(targets)) {
-    targets = cbind(lu.from = "1",targets)
-    areas = cbind(lu.from = "1",areas)
-    betas = cbind(lu.from = "1",betas)
-    if (!is.null(priors)) {priors = cbind(lu.from = "1",priors)}
-    if (!is.null(restrictions)) {restrictions = cbind(lu.from = "1",restrictions)}
-    null_lu.from = TRUE
-  } else {null_lu.from = FALSE}
-
-  if (!all(areas$value >= 0)) {stop(paste0(err.txt,"All areas must be larger or equal to zero."))}
-  if (!all(targets >=0)) {
-    targets[targets<0] = 0
-    warning(paste0(err.txt,"Set negative targets to 0."))
-  }
-  if (!sum(areas$value) >= sum(targets$value)) {
-    targets$value = targets$value / sum(targets$value) * sum(areas$value)
-    warning(paste0(err.txt,"Sum of areas larger than sum of targets: lowered all targets to equal sum(areas)."))
-  }
 
   lu.from <- unique(targets$lu.from)
   lu.to <- unique(targets$lu.to)
   ks = unique(betas$ks)
-  # check if all targets are covered as either betas or priors
-  chck.names = targets  %>% left_join(
-    betas %>% group_by(lu.from,lu.to) %>% summarize(n = n(),.groups = "keep"),by = c("lu.from", "lu.to"))
-  chck.names$n[is.na(chck.names$n)] = 0
-  if (!is.null(priors)) {
-    if (any(paste0(priors$lu.from) == paste0(priors$lu.to))) {stop(paste0(err.txt,"Priors lu.from must be unequal to lu.to."))}
-    chck.names = chck.names %>%
-      left_join(
-        priors %>% group_by(lu.from,lu.to) %>% summarize(n2 = n(),.groups = "keep"),by = c("lu.from", "lu.to"))
-    chck.names$n2[is.na(chck.names$n2)] = 0
-    chck.names$n = chck.names$n + chck.names$n2
-  }
-  if (any(chck.names$n == 0)) {stop(paste0(err.txt,"Missing betas or priors for targets!"))}
 
   out.solver <- list()
   curr.lu.from <- lu.from[1]
@@ -207,80 +178,9 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       out.res = bind_rows(out.res,res.agg)
     }
   }
-  if (null_lu.from) {
-    res.agg = res.agg %>% dplyr::select(-lu.from)
-  }
   return(list(out.res = out.res, out.solver = out.solver))
 }
 
 
 
-#' Multinomial logit mean calculation with restrictions and cutoff
-#'
-#' @param x Bias correction parameters
-#' @param mu Means of each class
-#' @param areas Vector of areas
-#' @param restrictions Optional restrictions. Binary, if 1, the log-odds are set to zero
-#' @param cutoff Optional, defaults to zero. If set, all log-odds below cutoff are set to zero
-#'
-#' @export mu.mnl
-#'
-#' @return Returns the vector of log-odds times the areas
-mu.mnl = function(x,mu,areas,restrictions = NULL,cutoff = 0) {
-  mu = mu * matrix(x,nrow(mu),ncol(mu),byrow = TRUE)
-  mu = mu / rowSums(cbind(1,mu)) * areas
-  if (!is.null(restrictions)) {
-    mu[restrictions == 1] = 0
-  }
-  mu[mu<cutoff] = 0
-  return(mu)
-}
-
-#' Squared differences optimization function with multinomial logit
-#'
-#' @param x Bias correction parameters
-#' @param mu Means of each class
-#' @param areas Vector of areas
-#' @param targets Targets to match
-#' @param restrictions Optional restrictions. Binary, if 1, the log-odds are set to zero
-#' @param cutoff Optional, defaults to zero. If set, all log-odds below cutoff are set to zero
-#'
-#' @export sqr_diff.mnl
-#'
-#' @return Squared differences of optimized values and targets
-sqr_diff.mnl = function(x,mu,areas,targets,restrictions,cutoff = 0) {
-  x.mu = x[1:length(targets)]
-  mu = mu.mnl(x.mu,mu,areas,restrictions,cutoff)
-  return( sum((colSums(mu) - targets)^2) )
-}
-
-#' Get default options for bias corrections solver
-#'
-#' @param algorithm Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).
-#' @param xtol_rel Relative tolerance of solver.
-#' @param xtol_abs Absolute solver tolerance.
-#' @param maxeval Maximum evaluation of solver.
-#' @param MAX_EXP Numerical cutoff for MNL function.
-#' @param cutoff Optional cutoff to avoid MNL values close to zero.
-#' @param err.txt Error text for caller identification (used for debugging)
-#' @param max_diff If difference to targets is larger, redo the estimation (helps to avoid convergence errors)
-#' @param redo Maximum number of repeats
-#'
-#' @return List with default options for bias correction solver
-#'
-#' @details Call this function if you want to change default options for the bias corrections solver.
-#'
-#' @export solve_biascorr_control
-#'
-#' @examples
-#' opts1 = solve_biascorr_control()
-solve_biascorr_control = function(algorithm = "NLOPT_LN_SBPLX",
-                                   xtol_rel = 1.0e-20,xtol_abs = 1.0e-20,maxeval = 1600,
-                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
-                                   redo = 2,max_diff = 10^-8,err.txt = "") {
-  return(list(algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
-              maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,redo = redo,
-              max_diff = max_diff,err.txt = err.txt
-  ))
-}
 

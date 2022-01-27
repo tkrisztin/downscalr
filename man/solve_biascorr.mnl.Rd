@@ -11,7 +11,7 @@ solve_biascorr.mnl(
   betas,
   priors = NULL,
   restrictions = NULL,
-  options = solve_biascorr_control()
+  options = downscale_control()
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ solve_biascorr.mnl(
 
 \item{restrictions}{A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
 
-\item{options}{A list with solver options. Call \code{\link{solve_biascorr_control}} for default options and for more detail.}
+\item{options}{A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.}
 }
 \value{
 A list containing
@@ -41,6 +41,8 @@ Bias correction solver for multinomial logit type problems
 }
 \details{
 Given \code{p} targets matches either the projections from an MNL-type model or exogeneous priors.
+
+You should not call this functions directly, call \code{\link{downscale}} instead.
 
 min \deqn{\sum  (  z ij areas_i  - targets_j )^2}
 s.t. \deqn{ z_ij = \mu_ij}
