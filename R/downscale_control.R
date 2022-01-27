@@ -1,5 +1,6 @@
 #' Get default options for bias corrections solver
 #'
+#' @param solve_fun Downscaling algorithm (should be \code{\link{solve_biascorr.mnl}})).
 #' @param algorithm Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).
 #' @param xtol_rel Relative tolerance of solver.
 #' @param xtol_abs Absolute solver tolerance.
@@ -18,11 +19,12 @@
 #'
 #' @examples
 #' opts1 = downscale_control()
-downscale_control = function(algorithm = "NLOPT_LN_SBPLX",
+downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_SBPLX",
                                   xtol_rel = 1.0e-20,xtol_abs = 1.0e-20,maxeval = 1600,
                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
                                   redo = 2,max_diff = 10^-8,err.txt = "") {
-  return(list(algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
+  if (!solve_fun %in% c("solve_biascorr")) {stop("solve_fun not correctly specified.")}
+  return(list(solve_fun = solve_fun,algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
               maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,redo = redo,
               max_diff = max_diff,err.txt = err.txt
   ))

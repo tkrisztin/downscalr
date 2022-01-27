@@ -1,11 +1,11 @@
 #' Bias correction solver for multinomial logit type problems
 #'
-#' @param targets A dataframe with columns lu.from (optional), lu.to and value (all targets >= 0)
-#' @param areas A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
+#' @param targets A dataframe with columns lu.from, lu.to and value (all targets >= 0)
+#' @param areas A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
 #' @param xmat A dataframe of explanatory variables with columns ks and value
-#' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
-#' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
-#' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
+#' @param betas A dataframe of coefficients with columns ks, lu.from, lu.to & value
+#' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from, lu.to (with priors >= 0)
+#' @param restrictions A dataframe with columns ns, lu.from, lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
 #' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
 #'
 #' @details Given \code{p} targets matches either the projections from an MNL-type model or exogeneous priors.
@@ -99,7 +99,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     p1 = ncol(curr.betas)
     k = nrow(curr.betas)
 
-    if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {stop(paste0(err.txt,"Dimensions of xmat, ares and betas do not match."))}
+    if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {stop(paste0(err.txt,"Dimensions of xmat, areas and betas do not match."))}
     if (!is.null(priors)) {
       p2 = ncol(curr.priors)
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
@@ -161,24 +161,25 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
     if (all(not.zero)) {out.res = out.mu
     } else {out.res[,not.zero] = out.mu}
-    out.solver[[curr.lu.from]] = res$out.solver
+    out.solver[[curr.lu.from]] = res.x
 
     # add residual own flows in output
-    res$out.res2 = data.frame(ns = names(curr.areas),
-                              curr.areas - rowSums(res$out.res),res$out.res)
-    colnames(res$out.res2)[2] = paste0(curr.lu.from)
+    out.res2 = data.frame(ns = names(curr.areas),
+                              curr.areas - rowSums(out.res),out.res)
+    colnames(out.res2)[2] = paste0(curr.lu.from)
     # pivot into long format
     res.agg <- data.frame(
-      lu.from=curr.lu.from,res$out.res2 %>%
+      lu.from=curr.lu.from,out.res2 %>%
         pivot_longer(cols = -c("ns"),names_to = "lu.to"))
 
     # aggregate results over dataframes
-    if(curr.lu.from==lu.from[1]){out.res <- res.agg
+    if(curr.lu.from==lu.from[1]){
+      full.out.res <- res.agg
     } else {
-      out.res = bind_rows(out.res,res.agg)
+      full.out.res = bind_rows(full.out.res,res.agg)
     }
   }
-  return(list(out.res = out.res, out.solver = out.solver))
+  return(list(out.res = full.out.res, out.solver = out.solver))
 }
 
 

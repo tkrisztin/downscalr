@@ -58,12 +58,10 @@ err_check_inputs = function(targets,areas,xmat,betas,
   if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in targets."))}
   check_names = all(tibble::has_name(xmat, c("ks","ns","value")))
   if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat"))}
-  check_names = all(tibble::has_name(targets, c("lu.from","ns","value")))
+  check_names = all(tibble::has_name(areas, c("lu.from","ns","value")))
   if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in areas"))}
-  if (!tibble::has_name(betas,"lu.from")) {betas = cbind(lu.from = "1",betas)}
   check_names = all(tibble::has_name(betas, c("ks","lu.from","lu.to","value")))
   if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in betas"))}
-  if (!tibble::has_name(priors,"lu.from")) {priors = cbind(lu.from = "1",priors)}
   if (!is.null(priors)) {
     check_names = all(tibble::has_name(priors, c("ns","lu.from","lu.to","value")))
     if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in priors"))}
@@ -105,7 +103,7 @@ err_check_inputs = function(targets,areas,xmat,betas,
   # check if all targets are below the areas
   err.check = targets %>% group_by(.data$times) %>%
     dplyr::summarise(total = sum(.data$value))
-  if (!any(sum( areas$value) >= err.check$value )) {stop(paste0(err.txt,"Sum of areas larger than sum of targets."))}
+  if (any(sum( areas$value) < err.check$total )) {stop(paste0(err.txt,"Sum of areas larger than sum of targets."))}
 
   # check completeness
   # betas: Check if we have all ks
@@ -114,12 +112,6 @@ err_check_inputs = function(targets,areas,xmat,betas,
   # betas: Check if we have all lu.from
   lu.from = unique(targets$lu.from)
   if (!all(lu.from %in% betas$lu.from)) {stop(paste0(err.txt,"Missing lu.from in betas (reference targets)!"))}
-  # betas: Check if we have all lu.to
-  lu.to = unique(targets$lu.to)
-  if (!all(lu.to %in% betas$lu.to)) {stop(paste0(err.txt,"Missing lu.to in betas (reference targets)!"))}
-  # betas: Check if we have all combinations
-  expanded = betas %>% tidyr::expand(.data$ks,.data$lu.from,.data$lu.to)
-  if (nrow(expanded) != nrow(betas)) {stop(paste0(err.txt,"Missing combinations for betas"))}
   # areas: check all lu present
   lu.from <- unique(targets$lu.from)
   if (!all(lu.from %in% areas$lu.from)) {stop(paste0(err.txt,"Missing lu.from in areas (reference targets)!"))}

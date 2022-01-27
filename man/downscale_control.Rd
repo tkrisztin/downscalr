@@ -5,6 +5,7 @@
 \title{Get default options for bias corrections solver}
 \usage{
 downscale_control(
+  solve_fun = "solve_biascorr",
   algorithm = "NLOPT_LN_SBPLX",
   xtol_rel = 1e-20,
   xtol_abs = 1e-20,
@@ -17,6 +18,8 @@ downscale_control(
 )
 }
 \arguments{
+\item{solve_fun}{Downscaling algorithm (should be \code{\link{solve_biascorr.mnl}})).}
+
 \item{algorithm}{Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).}
 
 \item{xtol_rel}{Relative tolerance of solver.}

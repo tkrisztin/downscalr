@@ -20,7 +20,9 @@ complete_targets = function(targets) {
   # Add all combinations
   targets = targets %>%
     dplyr::right_join(targets %>%
-                        tidyr::expand(.data$lu.from,.data$lu.to,.data$times)) %>%
+                        tidyr::expand(.data$lu.from,.data$lu.to,.data$times),
+                      by = c("times", "lu.from", "lu.to")) %>%
+    filter(.data$lu.from != .data$lu.to) %>%
     tidyr::replace_na(list(value = 0))
   return(targets)
 }
@@ -42,7 +44,7 @@ complete_areas = function(areas) {
   # Add all combinations
   areas = areas %>%
     dplyr::right_join(areas %>%
-                        tidyr::expand(.data$lu.from,.data$ns)) %>%
+                        tidyr::expand(.data$lu.from,.data$ns),by = c("ns", "lu.from")) %>%
     tidyr::replace_na(list(value = 0))
   return(areas)
 }
@@ -94,7 +96,7 @@ complete_priors = function(priors) {
   priors = priors %>%
     dplyr::right_join(priors %>%
                         tidyr::expand(.data$lu.from,.data$ns)%>%
-                        tidyr::expand(.data$lu.to,.data$ns)) %>%
+                        tidyr::expand(.data$lu.to,.data$ns),.groups = "keep") %>%
     tidyr::replace_na(list(value = 0))
   return(priors)
 }
@@ -117,7 +119,7 @@ complete_restrictions = function(restrictions) {
   restrictions = restrictions %>%
     dplyr::right_join(restrictions %>%
                         tidyr::expand(.data$lu.from,.data$ns)%>%
-                        tidyr::expand(.data$lu.to,.data$ns)) %>%
+                        tidyr::expand(.data$lu.to,.data$ns),.groups = "keep") %>%
     tidyr::replace_na(list(value = 0))
   return(restrictions)
 }

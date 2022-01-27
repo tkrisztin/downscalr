@@ -15,17 +15,17 @@ solve_biascorr.mnl(
 )
 }
 \arguments{
-\item{targets}{A dataframe with columns lu.from (optional), lu.to and value (all targets >= 0)}
+\item{targets}{A dataframe with columns lu.from, lu.to and value (all targets >= 0)}
 
-\item{areas}{A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
+\item{areas}{A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
 
 \item{xmat}{A dataframe of explanatory variables with columns ks and value}
 
-\item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value}
+\item{betas}{A dataframe of coefficients with columns ks, lu.from, lu.to & value}
 
-\item{priors}{A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)}
+\item{priors}{A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from, lu.to (with priors >= 0)}
 
-\item{restrictions}{A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
+\item{restrictions}{A dataframe with columns ns, lu.from, lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
 
 \item{options}{A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.}
 }

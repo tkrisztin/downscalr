@@ -34,17 +34,17 @@ downscale = function(targets,start.areas,xmat,betas,
                      options = downscale_control()) {
   # Handle input checking
   err.txt = options$err.txt
-  err_check_inputs(targets,start.areas,xmat,betas,
-                   areas.update.fun,xmat.coltypes,
-                   xmat.proj,xmat.dyn.fun,
-                   priors,restrictions,err.txt)
   targets = complete_targets(targets)
-  areas = complete_areas(areas)
+  start.areas = complete_areas(start.areas)
   xmat = complete_xmat(xmat)
   betas = complete_betas(betas)
   if (!is.null(priors)) {priors = complete_priors(priors)}
   if (!is.null(restrictions)) {priors = complete_restrictions(restrictions)}
   if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj()}
+  err_check_inputs(targets,start.areas,xmat,betas,
+                   areas.update.fun,xmat.coltypes,
+                   xmat.proj,xmat.dyn.fun,
+                   priors,restrictions,err.txt)
 
   # save column types of xmat
   if (any(xmat.coltypes == "projected")) {proj.colnames = colnames(xmat)[xmat.coltypes == "projected"]}
@@ -65,11 +65,15 @@ downscale = function(targets,start.areas,xmat,betas,
     # Extract targets
     curr.targets = filter(targets,times == curr.time) %>% select(-times)
 
-    # res = downscale.mnl.multeq(targets = curr.targets,areas = curr.areas,
-    #                            xmat = curr.xmat,betas = betas,priors = curr.priors,
-    #                            restrictions=curr.restrictions,err.txt = paste0(curr.time,"-"))
-    res = solve_biascorr.mnl(targets,areas,xmat,betas,priors,restrictions,options)
-    out.solver[[curr.time]] = res$out.solver
+    if (options$solve_fun == "solve_biascorr") {
+      res = solve_biascorr.mnl(targets = curr.targets,
+                               areas = curr.areas,
+                               xmat = curr.xmat,
+                               betas = betas,
+                               priors = curr.priors,
+                               restrictions=curr.restrictions,options = options)
+      out.solver[[curr.time]] = res$out.solver
+    }
 
     # update curr.area
     curr.areas = areas.update.fun(res, curr.areas, priors, xmat.proj)
