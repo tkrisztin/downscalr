@@ -92,11 +92,14 @@ complete_priors = function(priors) {
   }  else {
     if (any(priors$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
-  # Add all combinations
+  #Add all combinations
+  # lu.from & lu.to defined to fool the package checker with dplyr namebindings
+  #   (.data$ does not work in nested function)
+  lu.from = lu.to = NULL
   priors = priors %>%
     dplyr::right_join(priors %>%
-                        tidyr::expand(.data$lu.from,.data$ns)%>%
-                        tidyr::expand(.data$lu.to,.data$ns),.groups = "keep") %>%
+                        tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
+                      .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   return(priors)
 }
@@ -116,10 +119,13 @@ complete_restrictions = function(restrictions) {
     if (any(restrictions$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
   # Add all combinations
+  # lu.from & lu.to defined to fool the package checker with dplyr namebindings
+  #   (.data$ does not work in nested function)
+  lu.from = lu.to = NULL
   restrictions = restrictions %>%
     dplyr::right_join(restrictions %>%
-                        tidyr::expand(.data$lu.from,.data$ns)%>%
-                        tidyr::expand(.data$lu.to,.data$ns),.groups = "keep") %>%
+                        tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
+                      .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   return(restrictions)
 }

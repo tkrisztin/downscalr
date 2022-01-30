@@ -1,6 +1,7 @@
 
-PLCHOLD_LU = "PLACEHOLDER"
-PLCHOLD_T = -999
+PLCHOLD_REGION = "NA_REGION"
+PLCHOLD_LU = "NA_LU"
+PLCHOLD_T = "NA_TIME"
 
 #' Error check inputs
 #'
@@ -23,6 +24,15 @@ err_check_inputs = function(targets,areas,xmat,betas,
                             areas.update.fun,xmat.coltypes,
                             xmat.proj,xmat.dyn.fun,
                             priors,restrictions,err.txt) {
+  # check NA
+  if (any(is.na(targets)) ||
+      any(is.na(areas)) ||
+      any(is.na(xmat)) ||
+      any(is.na(betas))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(priors) && any(is.na(priors))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(restrictions) && any(is.na(restrictions))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(xmat.proj) && any(is.na(xmat.proj))) {stop(paste0(err.txt,"Input contains NA values"))}
+
   # check rows
   if (nrow(targets) < 1) {stop(paste0(err.txt,"No observations in targets!"))}
   if (nrow(areas) < 1) {stop(paste0(err.txt,"No observations in areas!"))}

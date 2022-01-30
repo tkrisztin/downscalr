@@ -39,7 +39,7 @@ downscale = function(targets,start.areas,xmat,betas,
   xmat = complete_xmat(xmat)
   betas = complete_betas(betas)
   if (!is.null(priors)) {priors = complete_priors(priors)}
-  if (!is.null(restrictions)) {priors = complete_restrictions(restrictions)}
+  if (!is.null(restrictions)) {restrictions = complete_restrictions(restrictions)}
   if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj()}
   err_check_inputs(targets,start.areas,xmat,betas,
                    areas.update.fun,xmat.coltypes,

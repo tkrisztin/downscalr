@@ -100,17 +100,14 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     k = nrow(curr.betas)
 
     if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {stop(paste0(err.txt,"Dimensions of xmat, areas and betas do not match."))}
-    if (!is.null(priors)) {
+    if (!is.null(curr.priors)) {
       p2 = ncol(curr.priors)
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
     } else {p2 = 0}
     if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
 
     # check restrictions for consistency
-    if (!is.null(restrictions)) {
-      if (!all(colnames(curr.restrictions) %in% names(curr.targets))) {stop(paste0(err.txt,"Names of restrictions and targets do not match."))}
-      if (any(!curr.restrictions %in% c(0,1))) {stop(paste0(err.txt,"Restrictions must be binary only!"))}
-      if (nrow(curr.restrictions)!=n) {stop(paste0(err.txt,"Dimension of restrictions does not match."))}
+    if (!is.null(curr.restrictions)) {
       restr.mat = matrix(0,n,p); colnames(restr.mat) = names(curr.targets)
       restr.mat[,colnames(curr.restrictions)] = curr.restrictions
     } else {restr.mat = NULL}
