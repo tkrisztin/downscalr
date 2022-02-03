@@ -10,7 +10,7 @@ PLCHOLD_T = "NA_TIME"
 #' @param xmat A dataframe of explanatory variables with columns ks and value
 #' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
 #' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must dataframe with columns ns, lu.from & value defaults to areas.sum_to() which sums over lu.to
-#' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
+#' @param xmat.coltypes A dataframce with columns ks and string value, can be either "static", "dynamic", or "projected"
 #' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
 #' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
 #' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
@@ -31,6 +31,7 @@ err_check_inputs = function(targets,areas,xmat,betas,
       any(is.na(betas))) {stop(paste0(err.txt,"Input contains NA values"))}
   if (!is.null(priors) && any(is.na(priors))) {stop(paste0(err.txt,"Input contains NA values"))}
   if (!is.null(restrictions) && any(is.na(restrictions))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(xmat.coltypes) && any(is.na(xmat.coltypes))) {stop(paste0(err.txt,"Input contains NA values"))}
   if (!is.null(xmat.proj) && any(is.na(xmat.proj))) {stop(paste0(err.txt,"Input contains NA values"))}
 
   # check rows
@@ -47,21 +48,9 @@ err_check_inputs = function(targets,areas,xmat,betas,
   if (!is.null(xmat.proj)) {
     if (nrow(xmat.proj) < 1) {stop(paste0(err.txt,"No observations in xmat.proj!"))}
   }
-
-  # check xmat.coltypes
-  if (!all(xmat.coltypes %in% c("static","dynamic","projected"))) {
-    stop(paste0(err.txt,"All xmat.coltypes must be either static|dynamic|projected"))}
-  # for projected columns, make sure xmat.proj is supplied
-  if (any(xmat.coltypes == "projected")) {
-    if (is.null(xmat.proj)) {stop(paste0(err.txt,"Columns are specified as projected, but xmat.proj missing."))}
-    chck.xmat = expand.grid(times = unique(targets$times), ks = colnames(xmat)[xmat.coltypes == "projected"]) %>%
-      left_join(
-        xmat.proj %>% group_by(.data$times,.data$ks) %>% summarize(n = n(),.groups = "keep"),by = c("times", "ks")
-      )
-    if (any(is.na(chck.xmat$n))) {stop(paste0(err.txt,"xmat.proj must provide values for all times and projected ks."))}
+  if (!is.null(xmat.coltypes)) {
+    if (nrow(xmat.coltypes) < 1) {stop(paste0(err.txt,"No observations in xmat.coltypes!"))}
   }
-  if (any(xmat.coltypes == "dynamic") && is.null(xmat.dyn.fun)) {
-    stop(paste0(err.txt,"Dynamic columns specified but missing xmat.dyn.fun for update."))}
 
   # check correct names
   check_names = all(tibble::has_name(targets, c("lu.from","lu.to","times","value")))
@@ -81,8 +70,12 @@ err_check_inputs = function(targets,areas,xmat,betas,
     if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in restrictions"))}
   }
   if (!is.null(xmat.proj)) {
-    check_names = all(tibble::has_name(restrictions, c("ns","ks","times","value")))
-    if (!all(xmat.proj)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
+    check_names = all(tibble::has_name(xmat.proj, c("ns","ks","times","value")))
+    if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
+  }
+  if (!is.null(xmat.coltypes)) {
+    check_names = all(tibble::has_name(xmat.coltypes, c("ks","value")))
+    if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
   }
 
   # check values
@@ -114,6 +107,21 @@ err_check_inputs = function(targets,areas,xmat,betas,
   err.check = targets %>% group_by(.data$times) %>%
     dplyr::summarise(total = sum(.data$value))
   if (any(sum( areas$value) < err.check$total )) {stop(paste0(err.txt,"Sum of areas larger than sum of targets."))}
+  # check xmat.coltypes
+  if (!all(xmat.coltypes$value %in% c("static","dynamic","projected"))) {
+    stop(paste0(err.txt,"All xmat.coltypes values must be either static,dynamic, or projected"))}
+  # for projected columns, make sure xmat.proj is supplied
+  if (any(xmat.coltypes$value == "projected")) {
+    if (is.null(xmat.proj)) {stop(paste0(err.txt,"Columns are specified as projected, but xmat.proj missing."))}
+    chck.xmat = expand.grid(times = unique(targets$times),
+                            ks = dplyr::filter(xmat.coltypes,.data$value == "projected")$ks) %>%
+      left_join(
+        xmat.proj %>% group_by(.data$times,.data$ks) %>% summarize(n = n(),.groups = "keep"),by = c("times", "ks")
+      )
+    if (any(is.na(chck.xmat$n))) {stop(paste0(err.txt,"xmat.proj must provide values for all times and projected ks."))}
+  }
+  if (any(xmat.coltypes$value == "dynamic") && is.null(xmat.dyn.fun)) {
+    stop(paste0(err.txt,"Dynamic columns specified but missing xmat.dyn.fun for update."))}
 
   # check completeness
   # betas: Check if we have all ks

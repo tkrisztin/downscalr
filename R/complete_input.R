@@ -24,6 +24,7 @@ complete_targets = function(targets) {
                       by = c("times", "lu.from", "lu.to")) %>%
     filter(.data$lu.from != .data$lu.to) %>%
     tidyr::replace_na(list(value = 0))
+  targets = dplyr::arrange(targets,.data$lu.from,.data$lu.to,.data$times)
   return(targets)
 }
 
@@ -46,6 +47,7 @@ complete_areas = function(areas) {
     dplyr::right_join(areas %>%
                         tidyr::expand(.data$lu.from,.data$ns),by = c("ns", "lu.from")) %>%
     tidyr::replace_na(list(value = 0))
+  areas = dplyr::arrange(areas,.data$lu.from,.data$ns)
   return(areas)
 }
 
@@ -58,6 +60,7 @@ complete_areas = function(areas) {
 #' Internal function. Placeholder in case of needed additional completions.
 #' @keywords internal
 complete_xmat = function(xmat) {
+  xmat = dplyr::arrange(xmat,.data$ks,.data$ns)
   return(xmat)
 }
 
@@ -75,6 +78,7 @@ complete_betas = function(betas) {
   } else {
     if (any(betas$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
+  betas = dplyr::arrange(betas,.data$lu.from,.data$lu.to,.data$ks)
   return(betas)
 }
 
@@ -101,6 +105,7 @@ complete_priors = function(priors) {
                         tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
                       .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
+  priors = dplyr::arrange(priors,.data$lu.from,.data$lu.to,.data$ns)
   return(priors)
 }
 
@@ -127,7 +132,37 @@ complete_restrictions = function(restrictions) {
                         tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
                       .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
+  restrictions = dplyr::arrange(restrictions,.data$lu.from,.data$lu.to,.data$ns)
   return(restrictions)
+}
+
+#' Complete input xmat.coltypes
+#'
+#' @param xmat.coltypes Dataframe of xmat.coltypes, must have columns ks and value;
+#' if it is NULL, this will be created as all static
+#' deprecated: can also be a vector
+#'
+#' @return Completed dataframe with ks and values
+#'
+#' Internal function. Adds missing columns and completes potential sparse dataframes.
+#' @keywords internal
+complete_xmat.coltypes = function(xmat.coltypes,xmat) {
+  if (is.null(xmat.coltypes)) {
+    xmat.coltypes = data.frame(ks = unique(xmat$ks),
+                               value = "static")
+  }
+  # Handle legacy xmat.coltypes with warning
+  if (is.vector(xmat.coltypes)) {
+    warning("Depreciated: xmat.coltypes should be a dataframe with columns ks and value, not a vector.\n
+            Attempting to convert to appropriate coltype.\n
+            This will be removed in future versions.")
+    if (is.null(names(xmat.coltypes))) stop("No names in xmat.coltypes")
+    ks = unique(xmat$ks)
+    xmat.coltypes2 = data.frame(ks = ks,value = xmat.coltypes)
+    xmat.coltypes2$value[xmat.coltypes2$ks %in% names(xmat.coltypes)] = xmat.coltypes
+    xmat.coltypes = xmat.coltypes2
+  }
+  return(xmat.coltypes)
 }
 
 #' Complete input xmat.proj
@@ -144,5 +179,6 @@ complete_xmat.proj = function(xmat.proj) {
   } else {
     if (any(xmat.proj$times == PLCHOLD_T)) stop(paste0("The times ",PLCHOLD_T," is reserved, use another label."))
   }
+  xmat.proj = dplyr::arrange(xmat.proj,.data$times,.data$ks,.data$ns)
   return(xmat.proj)
 }

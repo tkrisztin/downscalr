@@ -10,7 +10,7 @@ downscale(
   xmat,
   betas,
   areas.update.fun = areas.sum_to,
-  xmat.coltypes = rep("static", ncol(xmat)),
+  xmat.coltypes = NULL,
   xmat.proj = NULL,
   xmat.dyn.fun = NULL,
   priors = NULL,

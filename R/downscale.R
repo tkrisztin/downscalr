@@ -4,7 +4,7 @@
 #' @param start.areas  A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
 #' @param xmat A dataframe of explanatory variables with columns ks and value
 #' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
-#' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must dataframe with columns ns, lu.from & value defaults to areas.sum_to() which sums over lu.to
+#' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to
 #' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
 #' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
 #' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
@@ -28,8 +28,8 @@
 #' ## A basic example
 downscale = function(targets,start.areas,xmat,betas,
                      areas.update.fun = areas.sum_to,
-                     xmat.coltypes = rep("static",ncol(xmat)),
-                     xmat.proj = NULL,xmat.dyn.fun = NULL,
+                     xmat.coltypes = NULL,
+                     xmat.proj = NULL,xmat.dyn.fun = areas.identity,
                      priors = NULL,restrictions=NULL,
                      options = downscale_control()) {
   # Handle input checking
@@ -38,20 +38,18 @@ downscale = function(targets,start.areas,xmat,betas,
   start.areas = complete_areas(start.areas)
   xmat = complete_xmat(xmat)
   betas = complete_betas(betas)
+  complete_xmat.coltypes = complete_xmat.coltypes(xmat.coltypes,xmat)
   if (!is.null(priors)) {priors = complete_priors(priors)}
   if (!is.null(restrictions)) {restrictions = complete_restrictions(restrictions)}
-  if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj()}
+  if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj(xmat.proj)}
   err_check_inputs(targets,start.areas,xmat,betas,
                    areas.update.fun,xmat.coltypes,
                    xmat.proj,xmat.dyn.fun,
                    priors,restrictions,err.txt)
 
   # save column types of xmat
-  if (any(xmat.coltypes == "projected")) {proj.colnames = colnames(xmat)[xmat.coltypes == "projected"]}
-  if (any(xmat.coltypes == "dynamic")) {dyn.colnames = colnames(xmat)[xmat.coltypes == "dynamic"]}
-
-  # ensure correct ordering
-  # TODO
+  if (any(xmat.coltypes$value == "projected")) {proj.colnames = filter(xmat.coltypes,.data$value == "projected")$ks}
+  if (any(xmat.coltypes$value == "dynamic")) {dyn.colnames = filter(xmat.coltypes,.data$value == "dynamic")$ks}
 
   # Set starting values
   curr.areas = start.areas
@@ -79,17 +77,21 @@ downscale = function(targets,start.areas,xmat,betas,
     curr.areas = areas.update.fun(res, curr.areas, priors, xmat.proj)
 
     # update projected xmats
-    if (any(xmat.coltypes == "projected")) {
-      tmp.proj = xmat.proj %>%
-        filter(times == curr.time) %>%
-        dplyr::select(-times) %>%
-        tidyr::pivot_wider(names_from = .data$ks,values_from = "value")
-      xmat[,proj.colnames] = as.matrix(tmp.proj[match(row.names(xmat),tmp.proj$ns),proj.colnames])
+    if (any(xmat.coltypes$value == "projected")) {
+      xmat = xmat %>%
+        left_join(dplyr::filter(xmat.proj,times == curr.time) %>%
+                    dplyr::select(-times) %>% rename("proj" = "value") %>%
+                    mutate(ns = as.character(.data$ns)),by = c("ks","ns"))
+      xmat = xmat %>% mutate(value = ifelse(!is.na(.data$proj),.data$proj,value)) %>%
+        dplyr::select(-proj)
     }
     # update dynamic xmats
-    if (any(xmat.coltypes == "dynamic")) {
+    if (any(xmat.coltypes$value == "dynamic")) {
       tmp.proj = xmat.dyn.fun(res, curr.areas, priors, xmat, xmat.proj)
-      xmat[,dyn.colnames] = as.matrix(tmp.proj[,dyn.colnames])
+      xmat = xmat %>%
+        left_join(tmp.proj %>% rename("dyn" = "value"),by = c("ks" = "lu.from","ns"))
+      xmat = xmat %>% mutate(value = ifelse(!is.na(.data$dyn),.data$dyn,value)) %>%
+        dplyr::select(-dyn)
     }
     # aggregate results over dataframes
     res.agg = data.frame(times = curr.time,res$out.res)

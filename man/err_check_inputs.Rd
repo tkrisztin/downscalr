@@ -29,7 +29,7 @@ err_check_inputs(
 
 \item{areas.update.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must dataframe with columns ns, lu.from & value defaults to areas.sum_to() which sums over lu.to}
 
-\item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
+\item{xmat.coltypes}{A dataframce with columns ks and string value, can be either "static", "dynamic", or "projected"}
 
 \item{xmat.proj}{dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected}
 
