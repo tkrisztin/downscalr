@@ -21,10 +21,12 @@ First a prior model needs to be run. This can be done using the mnlogit() functi
 For additional guidance see the DownScale package documentation here: https://bit.ly/3fiLG3u
       
 # Additional information
+Supported by:
 
-*Downscalr was developed  with the financial support of the European Union’s Partnership Instrument and the German Federal Ministry for the Environment, Nature Conservation, and Nuclear Safety (BMU) in the context of the International Climate Initiative (IKI), particularly the SPIPA Argentina project.*
+<p float="left">
+  <img src="https://user-images.githubusercontent.com/9318979/152320807-db56e9d0-b0bb-4a5a-8f5a-51d1ab679de6.png" height="100" />
+  <img src="https://user-images.githubusercontent.com/9318979/152320782-f64da019-96dd-4e3c-beb2-97989d01602d.png" height="100" /> 
+</p>
 
-![SPIPA+wordmark](https://user-images.githubusercontent.com/9318979/150418047-76d8477c-20be-459a-8e3d-bee6c6bb5032.jpeg)
-
-*The programme Strategic Partnerships for the Implementation of the Paris Agreement (SPIPA) is jointly commissioned by the European Commission as a Foreign Policy Instrument Action and the German Federal Ministry for the Environment, Nature Conservation and Nuclear Safety in the context of the International Climate Initiative (IKI). SPIPA is implemented by the Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ) GmbH.*
+*Downscalr was developed with the financial support of the European Union’s Partnership Instrument and the German Federal Ministry for the Environment, Nature Conservation, and Nuclear Safety (BMU) in the context of the International Climate Initiative (IKI). Its contents are the sole responsibility of International Institute for Applied Systems Analysis (IIASA) and do not necessarily reflect the views of the funders.*
 
