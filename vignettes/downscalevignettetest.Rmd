@@ -1,0 +1,81 @@
+---
+title: "Downscaling land-use change projections in Argentina --- a tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{downscalevignettetest}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  resource_files:
+  - images/DownScale_Overview_Flowchart.png
+
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## Introduction 
+```{r echo=FALSE}
+knitr::include_graphics("images/DownScale_Overview_Flowchart.png")
+```
+Lorem Ipsum Test Test Test Test
+
+### Getting started
+
+#### Prior module
+Load required package
+
+```{r message=FALSE, warning=FALSE, include=TRUE}
+library(tidyr)
+library(downscalr)
+```
+
+Load and Prepare data for prior module
+
+```{r eval=FALSE}
+
+#load data
+data(argentina_df,argentina_luc)
+# Prepare data for econometric Multinomial logistic (MNL) regression
+Yraw <- argentina_luc
+Xraw <- argentina_df$xmat
+
+Y <- dplyr::filter(Yraw,lu.from == "Cropland" & Ts == 2000) %>%
+        pivot_wider(names_from = lu.to) %>%
+          tibble::column_to_rownames(var = "ns") %>%
+            dplyr::select(-c(lu.from, Ts))
+
+X <- Xraw %>% tidyr::pivot_wider(names_from = "ks") %>%
+      dplyr::arrange(match(ns,Y$ns)) %>%
+        tibble::column_to_rownames(var = "ns")
+
+```
+
+Estimate MNL model
+
+```{r eval=FALSE}
+#Compute MNL model with standard settings
+Y <- as.matrix(Y)
+X <- as.matrix(X)
+results <- mnlogit(X,Y,baseline = ncol(Y), niter = 1000, nburn = 500, A0 = 10^4)
+```
+##Downscale procedure
+```{r eval=FALSE}
+#Get and prepare target data
+data(argentina_FABLE)
+target <- argentina_FABLE
+start_areas <- argentina_df$lu_levels
+
+#Filter for year and lu.from according to example, i.e. 2010 & cropland
+target_2010_crop <- dplyr::filter(target,lu.from == "Cropland" & times == 2010)
+start_areas_crop <- dplyr::filter(start_areas, lu.from == "Cropland")
+
+xmat
+pred_coeff <- results$postb
+
+
+```
+
+Thats how we set hyperlinks [set hyperlinks](hyperlink.html)
