@@ -2,7 +2,7 @@
 title: "Downscaling land-use change projections in Argentina --- a tutorial using `downscalr`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Downscaling land-use change projections in Argentina --- a tutorial using `downscalr}
+  %\VignetteIndexEntry{Downscaling land-use change projections in Argentina --- a tutorial using `downscalr`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   resource_files:
