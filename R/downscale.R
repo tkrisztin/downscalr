@@ -2,7 +2,7 @@
 #'
 #' @param targets A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)
 #' @param start.areas  A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
-#' @param xmat A dataframe of explanatory variables with columns ks and value
+#' @param xmat A dataframe of explanatory variables with columns ns, ks and value
 #' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
 #' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to
 #' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
@@ -36,7 +36,7 @@ downscale = function(targets,start.areas,xmat,betas,
   err.txt = options$err.txt
   targets = complete_targets(targets)
   start.areas = complete_areas(start.areas)
-  xmat = complete_xmat(xmat)
+  xmat = complete_xmat(xmat) 
   betas = complete_betas(betas)
   complete_xmat.coltypes = complete_xmat.coltypes(xmat.coltypes,xmat)
   if (!is.null(priors)) {priors = complete_priors(priors)}
