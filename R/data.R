@@ -71,3 +71,20 @@ NULL
 #' }
 #' @source MapBiomas
 NULL
+
+#' List of Argentina key raster objects
+#'
+#' @name argentina_raster
+#' @docType data
+#' @keywords argentina raster
+#'
+#' List of CRS object, raster values, extent object to reconstruct Argentina map.
+#'
+#' @format A list with 3 objects:
+#' \describe{
+#'   \item{CRS}{Coordinate Reference System object}
+#'   \item{values}{A matrix with 431 rows and 237 cols, !NA elements grid location of Argentina}
+#'   \item{extent}{Extent object for Argentina raster map}
+#' }
+#' @source GLOBIOM map
+NULL

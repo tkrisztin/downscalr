@@ -32,11 +32,13 @@ Before we can start with the actual downscaling, some required packages have to 
 The first three are standard packages to facilitate data manipulation and the last one, of course, is the subject of this tutorial.
 
 ```{r message=FALSE, warning=FALSE, include=TRUE}
-#install.packages("tidyr","tibble","dplyr","downscalr")
+#install.packages("tidyr","tibble","dplyr")
 library(tidyr)
 library(tibble)
 library(dplyr)
 
+
+#devtools::install_github("tkrisztin/downscalr",ref="HEAD")
 library(downscalr)
 ```
 
@@ -129,5 +131,6 @@ results_DS <- downscale(targets = arg_targets_crop_2010,
 results_DS$out.res
 ```
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
+
 
 
