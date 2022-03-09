@@ -127,38 +127,47 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
-    if (!all(not.zero)) {
-      if (all(curr.targets == 0)) {return(list(out.res = out.res, out.solver = NULL))}
-      curr.targets = curr.targets[not.zero]
-      priors.mu = priors.mu[,not.zero,drop = FALSE]
-      if (!is.null(curr.restrictions)) {restr.mat = restr.mat[,not.zero,drop = FALSE]}
-    }
-    x0 = curr.targets / sum(curr.targets + 1)
-    opts <- list(algorithm = options$algorithm,
-                 xtol_rel = options$xtol_rel,
-                 xtol_abs = options$xtol_abs,
-                 maxeval = options$maxeval
-    )
-    redo = TRUE; countr = 1;
-    while (redo) {
-      res.x = nloptr::nloptr(x0,sqr_diff.mnl,
-                             lb = rep(exp(-options$MAX_EXP),length(x0)),
-                             ub = rep(exp(options$MAX_EXP),length(x0)),
-                             opts=opts,
-                             mu = priors.mu,areas = curr.areas,targets = curr.targets,
-                             restrictions = restr.mat,cutoff = options$cutoff)
-      if (res.x$objective < options$max_diff || countr > options$redo) {
-        redo =FALSE
-        res.x$par = res.x$solution
-      } else {
-        countr = countr + 1
-        x0 = res.x$solution
+    if (all(curr.targets == 0)) {
+      
+      #catch case if all targets are equal zero
+      out.solver[[curr.lu.from]] = NULL
+    } else {
+      
+      #cut out zero targets from targets and priors
+      if (any(curr.targets == 0) && !all(curr.targets == 0)) {
+        curr.targets = curr.targets[not.zero]
+        priors.mu = priors.mu[,not.zero,drop = FALSE]
+        if (!is.null(curr.restrictions)) {restr.mat = restr.mat[,not.zero,drop = FALSE]}
       }
+      #proceed with bias correction
+      x0 = curr.targets / sum(curr.targets + 1)
+      opts <- list(algorithm = options$algorithm,
+                   xtol_rel = options$xtol_rel,
+                   xtol_abs = options$xtol_abs,
+                   maxeval = options$maxeval
+      )
+      redo = TRUE; countr = 1;
+      while (redo) {
+        res.x = nloptr::nloptr(x0,sqr_diff.mnl,
+                               lb = rep(exp(-options$MAX_EXP),length(x0)),
+                               ub = rep(exp(options$MAX_EXP),length(x0)),
+                               opts=opts,
+                               mu = priors.mu,areas = curr.areas,targets = curr.targets,
+                               restrictions = restr.mat,cutoff = options$cutoff)
+        if (res.x$objective < options$max_diff || countr > options$redo) {
+          redo =FALSE
+          res.x$par = res.x$solution
+        } else {
+          countr = countr + 1
+          x0 = res.x$solution
+        }
+      }
+      
+      out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
+      if (all(not.zero)) {out.res = out.mu
+      } else {out.res[,not.zero] = out.mu}
+      out.solver[[curr.lu.from]] = res.x
     }
-    out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
-    if (all(not.zero)) {out.res = out.mu
-    } else {out.res[,not.zero] = out.mu}
-    out.solver[[curr.lu.from]] = res.x
 
     # add residual own flows in output
     out.res2 = data.frame(ns = names(curr.areas),

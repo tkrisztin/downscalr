@@ -70,7 +70,7 @@ downscale = function(targets,start.areas,xmat,betas,
                                betas = betas,
                                priors = curr.priors,
                                restrictions=curr.restrictions,options = options)
-      out.solver[[curr.time]] = res$out.solver
+      out.solver[[as.character(curr.time)]] = res$out.solver
     }
 
     # update curr.area
