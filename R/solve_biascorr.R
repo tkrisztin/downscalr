@@ -65,12 +65,15 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     curr.betas = as.matrix(curr.betas)
 
     # Extract xmat
+    ## IMPORTANT CHECK ORDER OF VARIABLES FIXED 
     curr.xmat = dplyr::filter(xmat,ks %in% row.names(curr.betas)) %>%
       tidyr::pivot_wider(names_from = "ks",values_from = "value",id_cols = "ns")  %>%
-      tibble::column_to_rownames(var = "ns")
+      tibble::column_to_rownames(var = "ns") %>%
+      dplyr::select(rownames(curr.betas))
     curr.xmat = as.matrix(curr.xmat)
 
     # Extract priors
+    ## IMPORTANT CHECK ORDER OF VARIABLES SIMILARLY TO XMAT
     if (!is.null(priors) && any(priors$lu.from == curr.lu.from)) {
       curr.priors = dplyr::filter(priors,lu.from == curr.lu.from) %>%
         tidyr::pivot_wider(names_from = lu.to,values_from = "value",id_cols = "ns") %>%
