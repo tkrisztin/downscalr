@@ -167,7 +167,7 @@ library(raster)
 ```
 
 
-```{r message=FALSE}
+```{r include=FALSE, message=FALSE}
 #load raster data for argentina
 data(argentina_raster)
 
