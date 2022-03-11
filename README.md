@@ -7,14 +7,20 @@ Originally DownScale was developed to provide high-resolution projections of the
 
 # Installation:
 
-You need R to run the scripts. In R the following commands install the `devtools` and `downscalr` packages. Devtools is required to install packages from Github.
+You need R to run the scripts. In R the following commands install the `devtools` and `downscalr` packages. Devtools is required to install packages from Github. 
+For now, if you want to install the package with its vignette -- this provides a quick guide on how to use `downscalr` --, `knitr` and `rmarkdown` are required as well. 
 
-      # install.packages("devtools")
+      # just install the downscalr package
+      ## install.packages("devtools")
+      devtools::install_github("tkrisztin/downscalr", ref="HEAD", repos = "http://cran.us.r-project.org")
+      
+      # install the downscalr package with vignette (note: this may take a couple minutes since some computing is required to render the vignette). 
+      ## install.packages(c("devtools", "knitr", "rmarkdown"))
       devtools::install_github("tkrisztin/downscalr", ref="HEAD", build_vignettes = TRUE, repos = "http://cran.us.r-project.org")
       
 # Running downscalr
 
-For now you can view a step by step tutorial on how to run `downscalr` -- if you have have followed the install instructions above -- with the following command in R: 
+If you have have followed the install instructions with vignette above, you can view the step by step tutorial via the following command in R: 
 
       browseVignettes("downscalr")
 
