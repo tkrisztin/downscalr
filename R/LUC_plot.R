@@ -14,7 +14,7 @@
 #' 
 #' @export LUC_plot
 #'
-#' @import raster
+#' @importFrom  raster getValues
 #' @import ggplot2
 #' @import dplyr
 #' @import ggthemes
