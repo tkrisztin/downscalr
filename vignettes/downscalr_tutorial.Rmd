@@ -205,7 +205,7 @@ LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color
 }
 
 ```
-```{r eval = FALSE}
+```{r}
 #Compare LUC in 2010 to intial LU allocation in 2000
 results <- results_DS$out.res
 initial_LU <- argentina_df$lu_levels
