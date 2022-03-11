@@ -66,7 +66,7 @@ Yraw <- argentina_luc
 Xraw <- argentina_df$xmat
 
 Y <- dplyr::filter(Yraw,lu.from == example_LU_from & Ts == 2000) %>%
-        pivot_wider(names_from = lu.to) %>%
+        tidyr::pivot_wider(names_from = lu.to) %>%
           tibble::column_to_rownames(var = "ns") %>%
             dplyr::select(-c(lu.from, Ts))
 
@@ -143,7 +143,7 @@ downscaled_LUC <- results_DS$out.res
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
 
 ## Visualize results
-```{r echo=FALSE, message=FALSE}
+```{r include=FALSE}
 if (!require("ggplot2")) install.packages("ggplot2")
 if (!require("rasterVis")) install.packages("rasterVis")
 if (!require("rgdal")) install.packages("rgdal")
@@ -154,7 +154,7 @@ if (!require("ggthemes")) install.packages("ggthemes")
 if (!require("raster")) install.packages("raster")
 ```
 
-```{r message=FALSE}
+```{r include=FALSE}
 #load some packages to plot
 library(ggplot2)
 library(rasterVis)
@@ -171,53 +171,8 @@ library(raster)
 #load raster data for argentina
 data(argentina_raster)
 
-#plot function
-LU_plot <- function(rasterfile, results, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
-  
-  save_geo_vals <- data.frame(getValues(rasterfile)) #just the SimU IDs
-  colnames(save_geo_vals)<-"SimUID"
-  
-  plot_spdf <- as(rasterfile, "SpatialPixelsDataFrame")
-  plot_df <- as.data.frame(plot_spdf)
-  
-  colnames(plot_df) <- c("ns", "x", "y")
-  
-  if(is.null(year) & is.null(LU)){
-    inputs <- results %>% group_by(ns, lu.to, times) %>% summarise(value = sum(value),.groups = "keep")
-  } else if(!(is.null(year) | is.null(LU))){
-    inputs <- results %>% group_by(ns, lu.to, times) %>% summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU & times==year)
-  } else if(is.null(year)){
-    inputs <- results %>% group_by(ns, lu.to, times) %>% summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU)
-  } else {
-    inputs <- results %>% group_by(ns, lu.to, times) %>% summarise(value = sum(value),.groups = "keep") %>% subset(times==year)
-  }
-  
-  plot_df <- merge(plot_df, inputs, by="ns")
-
-  ggplot() +  
-    geom_tile(data=plot_df, aes(x=x, y=y, fill=value, group=lu.to), alpha=0.8) + 
-    scale_fill_distiller(palette = color , name=label, direction = 1)+
-    
-    coord_equal() +
-    theme_map() +
-    theme(legend.position="bottom") +
-    theme(legend.key.width=unit(2, "cm"))+
-    if(is.null(year) & is.null(LU)){
-      facet_grid(times~lu.to)
-    } else if(!(is.null(year) | is.null(LU))){
-      ;
-    } else if(is.null(year)){
-      facet_wrap(~times)
-    } else {
-      facet_wrap(~lu.to)
-    }
-  
-}
-
-```
-```{r}
-#plot downscaled LUC projections from Cropland for the year 2010
-
-LU_plot(argentina_raster, downscaled_LUC)
+# call plot function & plot downscaled LUC projections from Cropland for the year 2010
+LUC_argentina_2010_Crop_plot <- LUC_plot(downscaled_LUC, argentina_raster)
+LUC_argentina_2010_Crop_plot
 ```
 
