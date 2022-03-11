@@ -14,7 +14,6 @@
 #' 
 #' @export LUC_plot
 #'
-#' @importFrom  raster getValues
 #' @import ggplot2
 #' @import dplyr
 #' @import ggthemes
@@ -22,9 +21,6 @@
 #' @examples
 #' ## A basic example
 LUC_plot <- function(res, rasterfile, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
-  
-  save_geo_vals <- data.frame(raster::getValues(rasterfile)) #just the SimU IDs
-  colnames(save_geo_vals)<-"SimUID"
   
   plot_spdf <- as(rasterfile, "SpatialPixelsDataFrame")
   plot_df <- as.data.frame(plot_spdf)
