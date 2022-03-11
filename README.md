@@ -14,13 +14,14 @@ For now, if you want to install the package with its vignette -- this provides a
       ## install.packages("devtools")
       devtools::install_github("tkrisztin/downscalr", ref="HEAD", repos = "http://cran.us.r-project.org")
       
-      # install the downscalr package with vignette (note: this may take a couple minutes since some computing is required to render the vignette). 
+      # install the downscalr package with vignette 
+      # (note: this may take a couple minutes since some computing is required to render the vignette). 
       ## install.packages(c("devtools", "knitr", "rmarkdown"))
       devtools::install_github("tkrisztin/downscalr", ref="HEAD", build_vignettes = TRUE, repos = "http://cran.us.r-project.org")
       
 # Running downscalr
 
-If you have have followed the install instructions with vignette above, you can view the step by step tutorial via the following command in R: 
+If you have have followed the install instructions with vignette above, you can view a step by step tutorial via the following command in R: 
 
       browseVignettes("downscalr")
 
