@@ -12,7 +12,7 @@ Description: For high-resolution projections of future land-use change IAMs ofte
 License: MIT + file LICENSE
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
-Imports: MASS, BayesLogit, nloptr, tidyr, dplyr, tibble
+Imports: MASS, BayesLogit, nloptr, tidyr, dplyr, tibble, raster
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
