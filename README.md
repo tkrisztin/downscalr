@@ -14,7 +14,7 @@ You need R to run the scripts. In R the following commands install the devtools 
       
 # Running downscalr
 
-For now you can view a step by step tutorial on how to run 'downscalr' -- if you have have followed the install instructions above -- with the following command in R: 
+For now you can view a step by step tutorial on how to run `downscalr` -- if you have have followed the install instructions above -- with the following command in R: 
 
       browseVignettes("downscalr")
 
