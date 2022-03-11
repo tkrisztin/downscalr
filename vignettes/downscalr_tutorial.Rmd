@@ -151,6 +151,7 @@ if (!require("grid")) install.packages("grid")
 if (!require("scales")) install.packages("scales")
 if (!require("viridis")) install.packages("viridis")
 if (!require("ggthemes")) install.packages("ggthemes")
+if (!require("raster")) install.packages("raster")
 ```
 
 ```{r message=FALSE}
