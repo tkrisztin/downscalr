@@ -206,9 +206,9 @@ LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color
 
 ```
 ```{r}
-#View downscaled LUC projections from Cropland for the year 2010
+#plot downscaled LUC projections from Cropland for the year 2010
 results <- results_DS$out.res
 
-LU_plot(argentina_raster, results, color="Green")
+LU_plot(argentina_raster, results, color="Greens")
 ```
 
