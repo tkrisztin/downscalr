@@ -172,7 +172,7 @@ library(raster)
 data(argentina_raster)
 
 #plot function
-LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
+LU_plot <- function(rasterfile, results, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
   
   save_geo_vals <- data.frame(getValues(rasterfile)) #just the SimU IDs
   colnames(save_geo_vals)<-"SimUID"
