@@ -30,7 +30,7 @@ In what follows, each process in Figure 1 -- from left to right -- and how it is
 
 ## Getting started
 
-Before we can start with the actual downscaling, some required packages have to be mounted to your `R session`. The first three are standard packages to facilitate data manipulation and the last one, of course, is the subject of this tutorial.
+Before we can start with the actual downscaling, some required packages have to be attached to your `R session`. The first three are standard packages to facilitate data manipulation and the last one, of course, is the subject of this tutorial.
 
 ```{r message=FALSE, warning=FALSE}
 #install.packages("tidyr","tibble","dplyr")
@@ -133,7 +133,7 @@ The `downscale()` function either accepts priors directly or computes them withi
 
 Lastly, given the example settings all remaining inputs to the downscale function can be kept at their default value.
 
-```{r eval = FALSE}
+```{r message=FALSE}
 results_DS <- downscale(targets = arg_targets_crop_2010, 
                 start.areas =  arg_start_areas_crop, xmat = X_long, betas = pred_coeff_long)
 
@@ -206,13 +206,9 @@ LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color
 
 ```
 ```{r}
-#Compare LUC in 2010 to intial LU allocation in 2000
+#View downscaled LUC projections from Cropland for the year 2010
 results <- results_DS$out.res
-initial_LU <- argentina_df$lu_levels
-initial_LU$lu.to <- initial_LU$lu.from
-initial_LU$times <- 2000
-results_with_init <- rbind(initial_LU,results)
 
-LU_plot(argentina_raster, results_with_init, color="Reds")
+LU_plot(argentina_raster, results, color="Green")
 ```
 
