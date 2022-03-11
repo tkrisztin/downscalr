@@ -143,7 +143,7 @@ downscaled_LUC <- results_DS$out.res
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
 
 ## Visualize results
-```{r include=FALSE}
+```{r eval=FALSE,include=FALSE}
 if (!require("ggplot2")) install.packages("ggplot2")
 if (!require("rasterVis")) install.packages("rasterVis")
 if (!require("rgdal")) install.packages("rgdal")
@@ -154,7 +154,7 @@ if (!require("ggthemes")) install.packages("ggthemes")
 if (!require("raster")) install.packages("raster")
 ```
 
-```{r include=FALSE}
+```{r eval=FALSE,include=FALSE}
 #load some packages to plot
 library(ggplot2)
 library(rasterVis)
@@ -167,7 +167,7 @@ library(raster)
 ```
 
 
-```{r include=FALSE, message=FALSE}
+```{r eval=FALSE,include=FALSE, message=FALSE}
 #load raster data for argentina
 data(argentina_raster)
 
