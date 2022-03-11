@@ -143,6 +143,15 @@ downscaled_LUC <- results_DS$out.res
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
 
 ## Visualize results
+```{r echo=FALSE, message=FALSE}
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("rasterVis")) install.packages("rasterVis")
+if (!require("rgdal")) install.packages("rgdal")
+if (!require("grid")) install.packages("grid")
+if (!require("scales")) install.packages("scales")
+if (!require("viridis")) install.packages("viridis")
+if (!require("ggthemes")) install.packages("ggthemes")
+```
 
 ```{r message=FALSE}
 #load some packages to plot
@@ -207,8 +216,7 @@ LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color
 ```
 ```{r}
 #plot downscaled LUC projections from Cropland for the year 2010
-results <- results_DS$out.res
 
-LU_plot(argentina_raster, results, color="Greens")
+LU_plot(argentina_raster, downscaled_LUC)
 ```
 
