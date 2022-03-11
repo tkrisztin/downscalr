@@ -112,16 +112,16 @@ arg_targets_crop_2010 <- dplyr::filter(argentina_FABLE, lu.from == example_LU_fr
                             times == example_time)
 
 ## pivot explanatory input data into long format
-X_long <-  X %>% rownames_to_column(var="ns") %>%
-            pivot_longer(!ns, names_to="ks", values_to = "value")
+X_long <-  X %>% tibble::rownames_to_column(var="ns") %>%
+            tidyr::pivot_longer(!ns, names_to="ks", values_to = "value")
 
 ## prior oefficients: compute mean of posterior draws & pivot to long format  
 pred_coeff <- as.data.frame(apply(results_MNL$postb[,-baseline,],c(1,2),mean))
 
-pred_coeff_long <- pred_coeff %>% rownames_to_column(var="ks") %>%
-    pivot_longer(!ks, names_to = "lu.to", values_to="value") %>% 
-      dplyr::arrange(lu.to) %>% 
-        add_column(lu.from=example_LU_from, .after="ks")
+pred_coeff_long <- pred_coeff %>% tibble::rownames_to_column(var="ks") %>%
+                    tidyr::pivot_longer(!ks, names_to = "lu.to", values_to="value") %>% 
+                      dplyr::arrange(lu.to) %>% 
+                        tibble::add_column(lu.from=example_LU_from, .after="ks")
 
 ## starting area should provide information on area of each (higher resolution) grid cell, i.e ns
 arg_start_areas_crop <- dplyr::filter(argentina_df$lu_levels, lu.from == example_LU_from)
