@@ -9,7 +9,7 @@ vignette: >
   - images/DownScale_Overview_Flowchart.png
 ---
 
-```{r, include = FALSE}
+```{r, echo=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -32,7 +32,7 @@ In what follows, each process in Figure 1 -- from left to right -- and how it is
 
 Before we can start with the actual downscaling, some required packages have to be mounted to your `R session`. The first three are standard packages to facilitate data manipulation and the last one, of course, is the subject of this tutorial.
 
-```{r eval=FALSE, echo=T, message=FALSE, warning=FALSE, include=FALSE}
+```{r message=FALSE, warning=FALSE}
 #install.packages("tidyr","tibble","dplyr")
 library(tidyr)
 library(tibble)
@@ -53,7 +53,7 @@ Moreover, LUC is basically the result of some mapping from each LU class to all 
 
 First, load the examplary data within `downscalr` package and transform it into the necessary format for the MNL model.
 
-```{r eval=FALSE}
+```{r message=FALSE}
 # Set example land use change origin to Cropland
 example_LU_from <- "Cropland"
 
@@ -79,7 +79,7 @@ X <- Xraw %>% tidyr::pivot_wider(names_from = "ks") %>%
 
 The MNL function requires the data input to be in matrix format. Further note, the baseline category is always set to the examined LUC origin class, i.e. currently set to Cropland. The other inputs control the amount of after burn-in draws, i.e. $niter-nburn$, from the *Gibbs Sampler* and the prior variance of the model coefficients $A0$. For now they can be kept to their default values.
 
-```{r eval=FALSE}
+```{r results = "hide", message=FALSE}
 #Compute MNL model with standard settings
 baseline <- which(colnames(Y) == example_LU_from)
 
@@ -100,7 +100,7 @@ The default settings automatically considers the former, i.e. changes in the LU 
 
 Set example year, load & prepare target data. Moreover, compute mean of coefficient posterior draws and transform data matrix X and mean coefficient matrix to the correct long format required by function `downscale()`.
 
-```{r eval=FALSE}
+```{r message=FALSE}
 # Set example year of downscaling target. e.g. 2010
 example_time <- 2010
 
@@ -133,18 +133,19 @@ The `downscale()` function either accepts priors directly or computes them withi
 
 Lastly, given the example settings all remaining inputs to the downscale function can be kept at their default value.
 
-```{r eval=FALSE}
+```{r eval = FALSE}
 results_DS <- downscale(targets = arg_targets_crop_2010, 
                 start.areas =  arg_start_areas_crop, xmat = X_long, betas = pred_coeff_long)
-results_DS$out.res
+
+downscaled_LUC <- results_DS$out.res
 ```
 
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
 
 ## Visualize results
 
-```{r eval=FALSE}
-#load some packages to plot 
+```{r message=FALSE}
+#load some packages to plot
 library(ggplot2)
 library(rasterVis)
 library(rgdal)
@@ -156,7 +157,7 @@ library(raster)
 ```
 
 
-```{r eval=FALSE}
+```{r message=FALSE}
 #load raster data for argentina
 data(argentina_raster)
 
@@ -203,6 +204,8 @@ LU_plot <- function(rasterfile, results, start.values, year=NULL, LU=NULL, color
   
 }
 
+```
+```{r eval = FALSE}
 #Compare LUC in 2010 to intial LU allocation in 2000
 results <- results_DS$out.res
 initial_LU <- argentina_df$lu_levels
@@ -211,6 +214,5 @@ initial_LU$times <- 2000
 results_with_init <- rbind(initial_LU,results)
 
 LU_plot(argentina_raster, results_with_init, color="Reds")
-
 ```
 
