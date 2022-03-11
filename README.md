@@ -10,7 +10,7 @@ Originally DownScale was developed to provide high-resolution projections of the
 You need R to run the scripts. In R the following commands install the `devtools` and `downscalr` packages. Devtools is required to install packages from Github.
 
       # install.packages("devtools")
-      devtools::install_github("tkrisztin/downscalr", ref="HEAD", build_vignettes = TRUE)
+      devtools::install_github("tkrisztin/downscalr", ref="HEAD", build_vignettes = TRUE, repos = "http://cran.us.r-project.org")
       
 # Running downscalr
 
