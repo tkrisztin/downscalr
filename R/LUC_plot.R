@@ -28,13 +28,13 @@ LUC_plot <- function(res, rasterfile, year=NULL, LU=NULL, color = "Greens", labe
   colnames(plot_df) <- c("ns", "x", "y")
   
   if(is.null(year) & is.null(LU)){
-    inputs <- results %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep")
+    inputs <- res %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep")
   } else if(!(is.null(year) | is.null(LU))){
-    inputs <- results %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU & times==year)
+    inputs <- res %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU & times==year)
   } else if(is.null(year)){
-    inputs <- results %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU)
+    inputs <- res %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(lu.to==LU)
   } else {
-    inputs <- results %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(times==year)
+    inputs <- res %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep") %>% subset(times==year)
   }
   
   plot_df <- merge(plot_df, inputs, by="ns")

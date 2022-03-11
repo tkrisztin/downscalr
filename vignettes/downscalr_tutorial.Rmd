@@ -167,12 +167,12 @@ library(raster)
 ```
 
 
-```{r eval=FALSE,include=FALSE, message=FALSE}
+```{r}
 #load raster data for argentina
 data(argentina_raster)
 
 # call plot function & plot downscaled LUC projections from Cropland for the year 2010
 LUC_argentina_2010_Crop_plot <- LUC_plot(downscaled_LUC, argentina_raster)
-LUC_argentina_2010_Crop_plot
+LUC_argentina_2010_Crop_plot$LUC.plot
 ```
 
