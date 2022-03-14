@@ -1,9 +1,9 @@
 # downscalr
 A package for high-resolution simulation of land-use change projections, with support for downscaling. 
 
-This package was developed in the context of the SPIPA Argentina project, in joint cooperation with colleagues from the [National Agricultural Technology Institute](https://www.argentina.gob.ar/inta). The main purpose of this package is to combine the IIASA's [DownScale](https://github.com/iiasa/DownScale) model, with INTA's Argentina specific implementation of the [Dinamica EGO](https://csr.ufmg.br/dinamica/) for the purpose of downscaling [FABLE Calculator](https://www.abstract-landscapes.com/fable-calculator) output. This will enable a more in-depth representation of high-resolution land-use change projections.
+This package was developed in the context of the SPIPA Argentina project, in joint cooperation with colleagues from the [National Agricultural Technology Institute](https://www.argentina.gob.ar/inta). The main purpose of this package is to combine IIASA's [DownScale](https://github.com/iiasa/DownScale) model, with INTA's Argentina specific implementation of [Dinamica EGO](https://csr.ufmg.br/dinamica/) for the purpose of downscaling [FABLE Calculator](https://www.abstract-landscapes.com/fable-calculator) output. This enables a more in-depth representation of high-resolution land-use change projections.
 
-Originally DownScale was developed to provide high-resolution projections of the [GLOBIOM](https://iiasa.ac.at/web/home/research/GLOBIOM/GLOBIOM.html) model. However, within the course of this project we have expanded it to be fully compatible with FABLE Calculator data. Moreover the code was ported to R and documented thoroughly, to enable ease of use by INTA, our Argentinian project partner.
+Originally DownScale was developed to provide high-resolution projections of the [GLOBIOM](https://iiasa.ac.at/web/home/research/GLOBIOM/GLOBIOM.html) model. However, within the course of SPIPA Argentina we have expanded it to be fully compatible with FABLE Calculator output. Moreover, the code was ported to R and documented thoroughly, to enable ease of use by INTA, our Argentinian project partner.
 
 # Installation:
 
