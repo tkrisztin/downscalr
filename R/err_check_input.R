@@ -92,19 +92,19 @@ err_check_inputs = function(targets,areas,xmat,betas,
   }
   # check if all targets are covered as either betas or priors
   chck.names = targets  %>% dplyr::left_join(
-    betas %>% group_by(.data$lu.from,.data$lu.to) %>% dplyr::summarize(n = n(),.groups = "keep"),by = c("lu.from", "lu.to"))
+    betas %>% dplyr::group_by(.data$lu.from,.data$lu.to) %>% dplyr::summarize(n = n(),.groups = "keep"),by = c("lu.from", "lu.to"))
   chck.names$n[is.na(chck.names$n)] = 0
   if (!is.null(priors)) {
     if (any(paste0(priors$lu.from) == paste0(priors$lu.to))) {stop(paste0(err.txt,"Priors lu.from must be unequal to lu.to."))}
     chck.names = chck.names %>%
       left_join(
-        priors %>% group_by(.data$lu.from,.data$lu.to) %>% dplyr::summarize(n2 = n(),.groups = "keep"),by = c("lu.from", "lu.to"))
+        priors %>% dplyr::group_by(.data$lu.to) %>% dplyr::summarize(n2 = n(),.groups = "keep"),by =  "lu.to")
     chck.names$n2[is.na(chck.names$n2)] = 0
     chck.names$n = chck.names$n + chck.names$n2
   }
   if (any(chck.names$n == 0)) {stop(paste0(err.txt,"Missing betas or priors for targets!"))}
   # check if all targets are below the areas
-  err.check = targets %>% group_by(.data$times) %>%
+  err.check = targets %>% dplyr::group_by(.data$times) %>%
     dplyr::summarise(total = sum(.data$value))
   if (any(sum( areas$value) < err.check$total )) {stop(paste0(err.txt,"Sum of areas larger than sum of targets."))}
   # check xmat.coltypes
@@ -116,7 +116,7 @@ err_check_inputs = function(targets,areas,xmat,betas,
     chck.xmat = expand.grid(times = unique(targets$times),
                             ks = dplyr::filter(xmat.coltypes,.data$value == "projected")$ks) %>%
       left_join(
-        xmat.proj %>% group_by(.data$times,.data$ks) %>% summarize(n = n(),.groups = "keep"),by = c("times", "ks")
+        xmat.proj %>% dplyr::group_by(.data$times,.data$ks) %>% dplyr::summarize(n = n(),.groups = "keep"),by = c("times", "ks")
       )
     if (any(is.na(chck.xmat$n))) {stop(paste0(err.txt,"xmat.proj must provide values for all times and projected ks."))}
   }
@@ -158,3 +158,4 @@ err_check_inputs = function(targets,areas,xmat,betas,
     if (nrow(expanded) != nrow(xmat.proj)) {stop(paste0(err.txt,"Missing variables in xmat.projfor pixels."))}
   }
 }
+
