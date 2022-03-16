@@ -98,7 +98,7 @@ err_check_inputs = function(targets,areas,xmat,betas,
     if (any(paste0(priors$lu.from) == paste0(priors$lu.to))) {stop(paste0(err.txt,"Priors lu.from must be unequal to lu.to."))}
     chck.names = chck.names %>%
       left_join(
-        priors %>% dplyr::group_by(.data$lu.to) %>% dplyr::summarize(n2 = n(),.groups = "keep"),by =  "lu.to")
+        priors %>% dplyr::group_by(.data$lu.from,.data$lu.to) %>% dplyr::summarize(n2 = n(),.groups = "keep"),by =  c("lu.from", "lu.to"))
     chck.names$n2[is.na(chck.names$n2)] = 0
     chck.names$n = chck.names$n + chck.names$n2
   }
