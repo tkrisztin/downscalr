@@ -12,7 +12,7 @@ downscale(
   areas.update.fun = areas.sum_to,
   xmat.coltypes = NULL,
   xmat.proj = NULL,
-  xmat.dyn.fun = NULL,
+  xmat.dyn.fun = areas.identity,
   priors = NULL,
   restrictions = NULL,
   options = downscale_control()
@@ -27,7 +27,7 @@ downscale(
 
 \item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value}
 
-\item{areas.update.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must dataframe with columns ns, lu.from & value defaults to areas.sum_to() which sums over lu.to}
+\item{areas.update.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to}
 
 \item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
 
