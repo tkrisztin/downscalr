@@ -102,7 +102,10 @@ err_check_inputs = function(targets,areas,xmat,betas,
     chck.names$n2[is.na(chck.names$n2)] = 0
     chck.names$n = chck.names$n + chck.names$n2
   }
-  if (any(chck.names$n == 0)) {stop(paste0(err.txt,"Missing betas or priors for targets!"))}
+  if (any(chck.names$n == 0)) {
+    name1 = chck.names %>% dplyr::filter(chck.names$n == 0)
+    stop(paste0(err.txt,"Missing betas or priors for targets: ",name1$lu.from[1],".",name1$lu.to[1],"!"))
+  }
   # check if all targets are below the areas
   err.check = targets %>% dplyr::group_by(.data$times) %>%
     dplyr::summarise(total = sum(.data$value))
