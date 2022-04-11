@@ -151,8 +151,8 @@ err_check_inputs = function(targets,areas,xmat,betas,
     ns = unique(areas$ns)
     if (!all(ns %in% xmat.proj$ns)) {stop(paste0(err.txt,"Missing pixels in xmat.proj (reference areas)!"))}
     # xmat.proj: Check if we have all combinations
-    expanded = xmat.proj %>% tidyr::expand(.data$times,.data$ks,.data$ns)
-    if (nrow(expanded) != nrow(xmat.proj)) {stop(paste0(err.txt,"Missing variables in xmat.projfor pixels."))}
+    expanded = length(unique(xmat.proj$ks)) * length(unique(xmat.proj$times)) * length(ns)
+    if (expanded != nrow(xmat.proj)) {stop(paste0(err.txt,"Missing variable/ns/times combination in xmat.proj."))}
   }
 }
 
