@@ -36,11 +36,11 @@ downscale = function(targets,start.areas,xmat,betas,
   err.txt = options$err.txt
   targets = complete_targets(targets)
   start.areas = complete_areas(start.areas)
-  xmat = complete_xmat(xmat) 
+  xmat = complete_xmat(xmat)
   betas = complete_betas(betas)
   complete_xmat.coltypes = complete_xmat.coltypes(xmat.coltypes,xmat)
-  if (!is.null(priors)) {priors = complete_priors(priors)}
-  if (!is.null(restrictions)) {restrictions = complete_restrictions(restrictions)}
+  if (!is.null(priors)) {priors = complete_priors(priors,xmat)}
+  if (!is.null(restrictions)) {restrictions = complete_restrictions(restrictions,xmat)}
   if (!is.null(xmat.proj )) {xmat.proj = complete_xmat.proj(xmat.proj)}
   err_check_inputs(targets,start.areas,xmat,betas,
                    areas.update.fun,xmat.coltypes,
@@ -64,12 +64,14 @@ downscale = function(targets,start.areas,xmat,betas,
     curr.targets = filter(targets,times == curr.time) %>% select(-times)
 
     if (options$solve_fun == "solve_biascorr") {
+      curr.options = options
+      curr.options$err.txt = paste0(curr.time," ",curr.options$err.txt)
       res = solve_biascorr.mnl(targets = curr.targets,
                                areas = curr.areas,
                                xmat = curr.xmat,
                                betas = betas,
                                priors = curr.priors,
-                               restrictions=curr.restrictions,options = options)
+                               restrictions=curr.restrictions,options = curr.options)
       out.solver[[as.character(curr.time)]] = res$out.solver
     }
 

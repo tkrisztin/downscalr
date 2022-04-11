@@ -2,7 +2,8 @@
 % Please edit documentation in R/areas_update.R
 \name{areas.sum_to}
 \alias{areas.sum_to}
-\title{Areas summing up function over land-use changes}
+\title{Areas summing up function over land-use changes
+LEOLEOTESTESTESTPUSH123}
 \usage{
 areas.sum_to(res, curr.areas, priors, xmat, xmat.proj)
 }
@@ -22,4 +23,5 @@ curr.areas A
 }
 \description{
 Areas summing up function over land-use changes
+LEOLEOTESTESTESTPUSH123
 }

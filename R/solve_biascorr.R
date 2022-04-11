@@ -41,8 +41,6 @@
 #' ## A basic example
 solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restrictions=NULL,
                               options = downscale_control()) {
-  err.txt = options$err.txt;
-
   lu.from <- unique(targets$lu.from)
   lu.to <- unique(targets$lu.to)
   ks = unique(betas$ks)
@@ -50,22 +48,25 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
   out.solver <- list()
   curr.lu.from <- lu.from[1]
   for(curr.lu.from in lu.from){
+    err.txt = paste0(curr.lu.from," ",options$err.txt)
+
     # Extract targets
     curr.targets = dplyr::filter(targets,lu.from == curr.lu.from)$value
     names(curr.targets) <- targets$lu.to[targets$lu.from == curr.lu.from]
+    curr.lu.to = names(curr.targets)
 
     # Extract areas
     curr.areas = dplyr::filter(areas,lu.from == curr.lu.from)$value
     names(curr.areas) <- areas$ns[areas$lu.from == curr.lu.from]
 
     # Extract betas
-    curr.betas = dplyr::filter(betas,lu.from == curr.lu.from) %>%
+    curr.betas = dplyr::filter(betas,lu.from == curr.lu.from & lu.to %in% curr.lu.to) %>%
       tidyr::pivot_wider(names_from = "lu.to",values_from = "value",id_cols = "ks") %>%
       tibble::column_to_rownames(var = "ks")
     curr.betas = as.matrix(curr.betas)
 
     # Extract xmat
-    ## IMPORTANT CHECK ORDER OF VARIABLES FIXED 
+    ## IMPORTANT CHECK ORDER OF VARIABLES FIXED
     curr.xmat = dplyr::filter(xmat,ks %in% row.names(curr.betas)) %>%
       tidyr::pivot_wider(names_from = "ks",values_from = "value",id_cols = "ns")  %>%
       tibble::column_to_rownames(var = "ns") %>%
@@ -75,7 +76,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     # Extract priors
     ## IMPORTANT CHECK ORDER OF VARIABLES SIMILARLY TO XMAT
     if (!is.null(priors) && any(priors$lu.from == curr.lu.from)) {
-      curr.priors = dplyr::filter(priors,lu.from == curr.lu.from) %>%
+      curr.priors = dplyr::filter(priors,lu.from == curr.lu.from & lu.to %in% curr.lu.to) %>%
         tidyr::pivot_wider(names_from = lu.to,values_from = "value",id_cols = "ns") %>%
         tibble::column_to_rownames(var = "ns")
       curr.priors = curr.priors[match(names(curr.areas),row.names(curr.priors)),,drop = FALSE]
@@ -102,7 +103,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     p1 = ncol(curr.betas)
     k = nrow(curr.betas)
 
-    if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {stop(paste0(err.txt,"Dimensions of xmat, areas and betas do not match."))}
+    if (p1 > 0 ) {
+      if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {
+        stop(paste0(err.txt,"Dimensions of xmat, areas and betas do not match."))
+      }
+    }
     if (!is.null(curr.priors)) {
       p2 = ncol(curr.priors)
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
@@ -131,11 +136,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
     if (all(curr.targets == 0)) {
-      
+
       #catch case if all targets are equal zero
       out.solver[[curr.lu.from]] = NULL
     } else {
-      
+
       #cut out zero targets from targets and priors
       if (any(curr.targets == 0) && !all(curr.targets == 0)) {
         curr.targets = curr.targets[not.zero]
@@ -165,7 +170,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
           x0 = res.x$solution
         }
       }
-      
+
       out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
       if (all(not.zero)) {out.res = out.mu
       } else {out.res[,not.zero] = out.mu}
@@ -177,9 +182,9 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
                               curr.areas - rowSums(out.res),out.res)
     colnames(out.res2)[2] = paste0(curr.lu.from)
     # pivot into long format
-    res.agg <- data.frame(
-      lu.from=curr.lu.from,out.res2 %>%
-        pivot_longer(cols = -c("ns"),names_to = "lu.to"))
+    res.agg <- out.res2 %>%
+        pivot_longer(cols = -c("ns"),names_to = "lu.to") %>%
+      bind_cols(lu.from = curr.lu.from)
 
     # aggregate results over dataframes
     if(curr.lu.from==lu.from[1]){

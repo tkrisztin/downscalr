@@ -130,12 +130,6 @@ err_check_inputs = function(targets,areas,xmat,betas,
   # betas: Check if we have all ks
   ks = unique(xmat$ks)
   if (!all(ks %in% betas$ks)) {stop(paste0(err.txt,"Missing variables in betas (reference xmat)!"))}
-  # betas: Check if we have all lu.from
-  lu.from = unique(targets$lu.from)
-  if (!all(lu.from %in% betas$lu.from)) {stop(paste0(err.txt,"Missing lu.from in betas (reference targets)!"))}
-  # areas: check all lu present
-  lu.from <- unique(targets$lu.from)
-  if (!all(lu.from %in% areas$lu.from)) {stop(paste0(err.txt,"Missing lu.from in areas (reference targets)!"))}
   # xmat: Check if we have all ns
   ns = unique(areas$ns)
   if (!all(ns %in% xmat$ns)) {stop(paste0(err.txt,"Missing pixels in xmat (reference areas)!"))}

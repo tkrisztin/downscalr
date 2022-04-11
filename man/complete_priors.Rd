@@ -4,10 +4,12 @@
 \alias{complete_priors}
 \title{Complete input priors}
 \usage{
-complete_priors(priors)
+complete_priors(priors, xmat)
 }
 \arguments{
 \item{priors}{Dataframe of priors, must have columns ns, lu.to and value}
+
+\item{xmat}{Dataframe of xmat, must have columns ns, ks and value}
 }
 \value{
 Completed dataframe with lu.from and all combinations

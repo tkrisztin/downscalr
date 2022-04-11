@@ -20,7 +20,7 @@ complete_targets = function(targets) {
   # Add all combinations
   targets = targets %>%
     dplyr::right_join(targets %>%
-                        tidyr::expand(.data$lu.from,.data$lu.to,.data$times),
+                        tidyr::expand(nesting(lu.from,lu.to),.data$times),
                       by = c("times", "lu.from", "lu.to")) %>%
     filter(.data$lu.from != .data$lu.to) %>%
     tidyr::replace_na(list(value = 0))
@@ -60,7 +60,11 @@ complete_areas = function(areas) {
 #' Internal function. Placeholder in case of needed additional completions.
 #' @keywords internal
 complete_xmat = function(xmat) {
-  xmat = dplyr::arrange(xmat,.data$ks,.data$ns)
+  xmat = dplyr::arrange(xmat,.data$ks,.data$ns) %>%
+    dplyr::right_join(xmat %>%
+                        tidyr::expand(.data$ns,.data$ks),
+                      by = c("ns", "ks")) %>%
+    tidyr::replace_na(list(value = 0))
   return(xmat)
 }
 
@@ -85,12 +89,13 @@ complete_betas = function(betas) {
 #' Complete input priors
 #'
 #' @param priors Dataframe of priors, must have columns ns, lu.to and value
+#' @param xmat Dataframe of xmat, must have columns ns, ks and value
 #'
 #' @return Completed dataframe with lu.from and all combinations
 #'
 #' Internal function. Adds missing columns and completes potential sparse dataframes.
 #' @keywords internal
-complete_priors = function(priors) {
+complete_priors = function(priors,xmat) {
   if (!tibble::has_name(priors,"lu.from")) {
     priors = cbind(lu.from = PLCHOLD_LU,priors)
   }  else {
@@ -100,10 +105,10 @@ complete_priors = function(priors) {
   # lu.from & lu.to defined to fool the package checker with dplyr namebindings
   #   (.data$ does not work in nested function)
   lu.from = lu.to = NULL
-  priors = priors %>%
-    dplyr::right_join(priors %>%
-                        tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
-                      .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
+  priors = priors %>%  dplyr::right_join(
+    priors %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
+    tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
+                            .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   priors = dplyr::arrange(priors,.data$lu.from,.data$lu.to,.data$ns)
   return(priors)
@@ -112,12 +117,13 @@ complete_priors = function(priors) {
 #' Complete input restrictions
 #'
 #' @param restrictions Dataframe of restrictions, must have columns ns, lu.to and value
+#' @param xmat Dataframe of xmat, must have columns ns, ks and value
 #'
 #' @return Completed dataframe with lu.from and all combinations
 #'
 #' Internal function. Adds missing columns and completes potential sparse dataframes.
 #' @keywords internal
-complete_restrictions = function(restrictions) {
+complete_restrictions = function(restrictions,xmat) {
   if (!tibble::has_name(restrictions,"lu.from")) {
     restrictions = cbind(lu.from = PLCHOLD_LU,restrictions)
   } else {
@@ -127,10 +133,10 @@ complete_restrictions = function(restrictions) {
   # lu.from & lu.to defined to fool the package checker with dplyr namebindings
   #   (.data$ does not work in nested function)
   lu.from = lu.to = NULL
-  restrictions = restrictions %>%
-    dplyr::right_join(restrictions %>%
-                        tidyr::expand(.data$ns,nesting(lu.from,lu.to)),
-                      .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
+  restrictions = restrictions %>%  dplyr::right_join(
+    restrictions %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
+      tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
+    .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   restrictions = dplyr::arrange(restrictions,.data$lu.from,.data$lu.to,.data$ns)
   return(restrictions)

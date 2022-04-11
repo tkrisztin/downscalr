@@ -4,10 +4,12 @@
 \alias{complete_restrictions}
 \title{Complete input restrictions}
 \usage{
-complete_restrictions(restrictions)
+complete_restrictions(restrictions, xmat)
 }
 \arguments{
 \item{restrictions}{Dataframe of restrictions, must have columns ns, lu.to and value}
+
+\item{xmat}{Dataframe of xmat, must have columns ns, ks and value}
 }
 \value{
 Completed dataframe with lu.from and all combinations

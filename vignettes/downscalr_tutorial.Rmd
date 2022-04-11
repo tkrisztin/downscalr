@@ -83,7 +83,10 @@ The MNL function requires the data input to be in matrix format. Further note, t
 #Compute MNL model with standard settings
 baseline <- which(colnames(Y) == example_LU_from)
 
-results_MNL <- mnlogit(as.matrix(X), as.matrix(Y), baseline, niter = 1000, nburn = 500, A0 = 10^4)
+# Decreased niter = 100 and nburn = 50 for faster computation 
+results_MNL <- mnlogit(as.matrix(X), as.matrix(Y), baseline, niter = 100, nburn = 50, A0 = 10^4)
+# Strongly recommended if you have more time: 
+# results_MNL <- mnlogit(as.matrix(X), as.matrix(Y), baseline, niter = 2000, nburn = 1000, A0 = 10^4)
 ```
 
 Stored in `results_MNL` (apart from inputs X,Y & baseline) are the after burn-in posterior draws for the MNL model coefficients and corresponding marginal effects. And that\`s basically it, we now have everything we want out of the Prior module and are able to proceed.

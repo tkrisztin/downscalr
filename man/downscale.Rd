@@ -23,7 +23,7 @@ downscale(
 
 \item{start.areas}{A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
 
-\item{xmat}{A dataframe of explanatory variables with columns ks and value}
+\item{xmat}{A dataframe of explanatory variables with columns ns, ks and value}
 
 \item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value}
 
