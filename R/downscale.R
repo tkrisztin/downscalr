@@ -29,7 +29,7 @@
 downscale = function(targets,start.areas,xmat,betas,
                      areas.update.fun = areas.sum_to,
                      xmat.coltypes = NULL,
-                     xmat.proj = NULL,xmat.dyn.fun = areas.identity,
+                     xmat.proj = NULL,xmat.dyn.fun = xmat.sum_to,
                      priors = NULL,restrictions=NULL,
                      options = downscale_control()) {
   # Handle input checking
@@ -91,7 +91,8 @@ downscale = function(targets,start.areas,xmat,betas,
     if (any(xmat.coltypes$value == "dynamic")) {
       tmp.proj = xmat.dyn.fun(res, curr.areas, priors, xmat, xmat.proj)
       xmat = xmat %>%
-        left_join(tmp.proj %>% rename("dyn" = "value"),by = c("ks" = "lu.from","ns"))
+        left_join(tmp.proj %>% rename("dyn" = "value") %>%
+                    filter(ks %in% xmat.coltypes$ks[xmat.coltypes$value == "dynamic"]),by = c("ks","ns"))
       xmat = xmat %>% mutate(value = ifelse(!is.na(.data$dyn),.data$dyn,value)) %>%
         dplyr::select(-dyn)
     }

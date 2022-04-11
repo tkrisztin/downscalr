@@ -12,7 +12,7 @@ downscale(
   areas.update.fun = areas.sum_to,
   xmat.coltypes = NULL,
   xmat.proj = NULL,
-  xmat.dyn.fun = areas.identity,
+  xmat.dyn.fun = xmat.sum_to,
   priors = NULL,
   restrictions = NULL,
   options = downscale_control()

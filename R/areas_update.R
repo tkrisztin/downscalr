@@ -1,5 +1,4 @@
 #' Areas summing up function over land-use changes
-#' LEOLEOTESTESTESTPUSH123
 #'
 #' @param res Result from downscale
 #' @param curr.areas Dataframe of current areas
