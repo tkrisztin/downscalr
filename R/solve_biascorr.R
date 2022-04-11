@@ -115,7 +115,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
 
     # check restrictions for consistency
-    if (!is.null(curr.restrictions)) {
+    if (!is.null(curr.restrictions) & any(colnames(curr.restrictions) %in% names(curr.targets))) {
       restr.mat = matrix(0,n,p); colnames(restr.mat) = names(curr.targets)
       restr.mat[,colnames(curr.restrictions)] = curr.restrictions
     } else {restr.mat = NULL}
