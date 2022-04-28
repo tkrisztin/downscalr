@@ -1,0 +1,1069 @@
+## downscaling minimization version, 
+# 
+# this version uses explicit LUC transitions 
+#  all GLOBIOM transitions are estimated
+# 
+# Also uses data from G4M for forest transitions
+#  Other changes: SRP, urban and nonrel flows
+#   as well as old/new forest
+#
+# TODO: saving the coefficients, the first label is wrong (e.g. cropland.cropland)
+#       should be reversed; curretn hotfix around line 563
+
+rm(list=ls())
+
+require(Brobdingnag)
+require(spam)
+require(FNN)
+require(Matrix)
+require(bayesm)
+library(MASS)
+require(tmvtnorm)
+require(msm)
+require(MCMCpack)
+require(raster)
+require(gdxrrw)
+library(reshape2)
+library(maps)
+library(maptools)
+library(RColorBrewer)
+library(classInt)
+library(shapefiles)
+library(fields)
+library(raster)
+library(rgdal)
+library(ggplot2)
+library(xtable)
+require(dfoptim)
+require(limSolve)
+require(nloptr)
+
+source("WmnlPGLogitMCMC2.R")
+source("geosmooth.R")
+source("utils.R")
+
+ilogit<-function(x,sx) {return(log(x/(1-sx)))}
+
+#target_path = "./output/"
+#target_path = "P:/globiom/Projects/FABLE/BendingTheCurve/Results/downscaled/"
+# load from file
+settings = read.csv("_settings.csv",stringsAsFactors = FALSE)
+target_path = settings$target_path
+
+#if in mac os x
+if (Sys.info()[1]!="Windows") {
+  igdx("/Applications/GAMS24.7/sysdir")
+} else {
+  igdx("C:/GAMS/win64/25.0")
+}
+
+###### load the needed datasets #####
+g4m_path = "P:/globiom/Projects/_/SIGMA/DATA/downscaling_G4M_data/"
+#g4m_path = "../Data_Mykola/"
+g4m_LU = read.csv(paste(g4m_path,"harmonized_simu_forest_area_map_msg2_06q_SSP2",
+                        "SPA2_fbck_mar2016_22032016scenRCP1p9_SPA2.csv",sep=""),
+                  stringsAsFactors = FALSE)
+
+LUCtotals = read.csv("GLOBIOM_regional_LU_LUC_biodiv.csv",stringsAsFactors = FALSE)
+
+LU2000 = read.csv("SimU_LU_biodiv_G4M_Feb17.csv",stringsAsFactors = FALSE)
+LU2000_start = LU2000
+#LU2000 = LU2000_start
+
+full_simu_map = read.csv("full_simu_map_biodiv.csv",stringsAsFactors = FALSE)
+regions = unique(full_simu_map$REGION_37); 
+regions = regions[order(regions)]; regions = regions[-1]
+
+### the different Y datasets for prior construction
+### ESA-CCI
+ESA_CCI = read.csv("ESACCI_harmonized.csv",stringsAsFactors = FALSE) # LUC in percent of total area
+ESA_CCI[,-c(1)] = ESA_CCI[,-c(1)] * full_simu_map$SimUArea *1000
+ESA_CCI_aggr_map = read.csv("downscaling_GLOBIOM_region_dataset_map_jan18.csv",stringsAsFactors = FALSE)
+### ESA-Ines
+
+### US-Data
+
+### Wageningen data
+
+### Ukraine data
+
+# no expansion in no YLD areas
+grasscrop_ylds = read.csv("GLOBIOM_grass_crop_yields_mod_oct17.csv",stringsAsFactors = FALSE)
+# SRP suitability
+SRP_suitability = read.csv("SRP_suitability.csv",stringsAsFactors = FALSE)
+# restored land prior
+RstLnd_prior = read.csv("RstLnd_prior.csv",stringsAsFactors = FALSE)
+RstLnd_prior$prior_CrpLnd_RstLnd[RstLnd_prior$prior_CrpLnd_RstLnd<0] = 0
+RstLnd_prior$prior_GrsLnd_RstLnd[RstLnd_prior$prior_GrsLnd_RstLnd<0] = 0
+
+g4m_baseline = read.csv("baseline_forest_simu_msg_06q.csv",stringsAsFactors = FALSE)
+
+p4s = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+geosims <- raster("shape_GLOBIOM/raster_simU/w001001.adf")
+proj4string(geosims)<-p4s #apply projection manually
+save_geovals <- data.frame(getValues(geosims)) #just the SimU IDs
+colnames(save_geovals)<-"SimUID"
+
+pop_data<-read.csv("SimU_population_SSP2.csv")
+
+# protected areas from David
+
+### load X matrix ###
+all_XX <-(read.table("Xmat.csv", header=TRUE,sep=",",stringsAsFactors=FALSE))
+orig_XX = all_XX # backup
+# no crop specific yields
+all_XX = all_XX[,-which(colnames(all_XX) %in% c("Barl","BeaD","Cass","ChkP","Corn","Cott","Gnut" ,
+                                                "Mill","Pota","Rape","Rice","Soya","Srgh",       
+                                                "SugC","Sunf","SwPo","Whea"))]
+# no old LU information
+all_XX = all_XX[,-which(colnames(all_XX) %in% c("CrpLnd","Grass","Forest","OthNatLnd"))]
+# put it together
+all_XX = 
+  data.frame(
+    LU2000[,c("cropland","grassland")],
+    forest = LU2000$priforest,
+    LU2000[,c("restored","SRP","other")],
+    all_XX[,-c(1:6)]
+  )
+
+# calc W
+source("knn.R")
+xy <- cbind(full_simu_map$X,full_simu_map$Y)
+nearest_simu = knn.index(xy,k=20)
+W<-getWknn(xy,30)
+WX <- W %*% as.matrix(all_XX)
+WX <- data.frame(as.matrix(WX)); 
+colnames(WX) <- paste("W_",colnames(WX),sep="")
+WX = WX[,-which(colSums(WX) == 0)]
+all_XX <- cbind(all_XX,as.matrix(WX))
+
+s1 = which(colnames(all_XX)=="cropland")
+s2 = which(colnames(all_XX)=="W_cropland")
+
+a1 = which(colnames(all_XX)=="SimUarea")
+
+tp1 = which(colnames(all_XX)=="totPop" )
+tp2 = which(colnames(all_XX)=="W_totPop" )
+rp1 = which(colnames(all_XX)=="ruralPop" )
+rp2 = which(colnames(all_XX)=="W_ruralPop" )
+
+to00 = read.csv("to00.csv",row.names = 1)
+to10 = read.csv("to10.csv",row.names = 1)
+
+luc_labs = row.names(to00)       
+fullYYluchat = data.frame(matrix(0,nrow(full_simu_map),length(luc_labs)))
+colnames(fullYYluchat) = luc_labs
+
+### allowed expansion areas
+### restrict expansion areas
+
+## calculate available areas per SimU
+
+### do an expanded grasscrop_yield
+ttemp = .1 * W %*% as.matrix(grasscrop_ylds)
+ttemp = .05 * W%*% ttemp + ttemp
+ttemp = .025 * W%*% ttemp + ttemp
+grasscrop_ylds = grasscrop_ylds + as.matrix(ttemp)
+### do an expanded restored land prior
+ttemp = .1 * W %*% as.matrix(grasscrop_ylds)
+ttemp = .05 * W%*% ttemp + ttemp
+ttemp = .025 * W%*% ttemp + ttemp
+grasscrop_ylds = grasscrop_ylds + as.matrix(ttemp)
+# specific solutions for countries
+ttemp = grasscrop_ylds[full_simu_map$REGION_37 == "Pacific_Islands","MEANYLD"]
+ttemp[ttemp < .01] = 1
+grasscrop_ylds[full_simu_map$REGION_37 == "Pacific_Islands","MEANYLD"] = ttemp
+
+### do an expanded SRP prior
+ttemp = .1 * W %*% as.matrix(SRP_suitability$SRP_NPP)
+ttemp = .05 * W%*% ttemp + ttemp
+ttemp = .025 * W%*% ttemp + ttemp
+SRP_suitability$SRP_NPP = SRP_suitability$SRP_NPP + as.matrix(ttemp)
+
+
+### restrict expansion areas
+allow_expansion = matrix(1,nrow(fullYYluchat),ncol(fullYYluchat))
+colnames(allow_expansion) = colnames(fullYYluchat)
+# cropland
+cropland_cols = grep(".cropland",colnames(allow_expansion))
+allow_expansion[grasscrop_ylds$MEANYLD==0,cropland_cols] = 0
+# grassland
+grassland_cols = grep(".grassland",colnames(allow_expansion))
+allow_expansion[grasscrop_ylds$GRASYLD==0,grassland_cols] = 0
+# SRP
+SRP_cols = grep(".SRP",colnames(allow_expansion))
+allow_expansion[SRP_suitability$SRP_NPP==0,SRP_cols] = 0
+#allow_expansion[SRP_suitability$SRP_AreaAG==0,"cropland.SRP"] = 0
+#allow_expansion[SRP_suitability$SRP_AreaGRAS==0,"grassland.SRP"] = 0
+#allow_expansion[(SRP_suitability$SRP_AreaWET + SRP_suitability$SRP_AreaNAT)==0,"other.SRP"] = 0
+# exclude protected areas
+
+
+fullYYluchat = fullYYluchat * allow_expansion
+
+# map of landcovers to LUC conversions
+landcover_map = list()
+landcover_map[["cropland"]] = row.names(to00)[to00$cropland == 1]
+landcover_map[["grassland"]] = row.names(to00)[to00$grassland == 1]
+landcover_map[["priforest"]] = row.names(to00)[to00$priforest == 1]
+landcover_map[["mngforest"]] = row.names(to00)[to00$mngforest == 1]
+landcover_map[["restored"]] = row.names(to00)[to00$restored == 1]
+landcover_map[["SRP"]] = row.names(to00)[to00$SRP == 1]
+landcover_map[["other"]] = row.names(to00)[to00$other == 1]
+landcover_map[["urban"]] = row.names(to00)[to00$urban == 1]
+
+# map of landcovers, without the .mngforest transitions (except mngforest.mngforest)
+# as these come from the G4M afforestation in the RCP1p9 and are 0 otherwise
+landcover_map_G4M = landcover_map
+landcover_map_G4M[["cropland"]] = landcover_map_G4M[["cropland"]][-grep(".mngforest",landcover_map_G4M[["cropland"]])]
+landcover_map_G4M[["grassland"]] = landcover_map_G4M[["grassland"]][-grep(".mngforest",landcover_map_G4M[["grassland"]])]
+landcover_map_G4M[["priforest"]] = landcover_map_G4M[["priforest"]][-grep(".mngforest",landcover_map_G4M[["priforest"]])]
+landcover_map_G4M[["SRP"]] = landcover_map_G4M[["SRP"]][-grep(".mngforest",landcover_map_G4M[["SRP"]])]
+landcover_map_G4M[["other"]] = landcover_map_G4M[["other"]][-grep(".mngforest",landcover_map_G4M[["other"]])]
+
+
+# map of landcovers that are actually downscaled (no restored/mngforest/urban)
+landcover_map_ds = landcover_map_G4M[-which(names(landcover_map_G4M) %in% c("restored","mngforest","urban"))]
+######     done with datasets  ######
+
+
+
+######## run/load the regressions for constructing priors       #######
+# should we re-estimate all regions? (WARNING: takes long...)
+all_new = FALSE   
+
+coeffs = list()
+sds = list()
+pips = list()
+bounds = list()
+namesXX = list()
+betaDraws = list()
+
+if (all_new) {
+  ############# start with ESA-CCI data --> this is most complete
+  
+  ESACCI_lc_regions = unique(ESA_CCI_aggr_map[,c("ESACCI_region","landcover")])
+  #ESACCI_lc_regions = ESACCI_lc_regions[-which(ESACCI_lc_regions$landcover == "SRP"),]
+  
+  landcoverESACCI = c("cropland","grassland","forest","other")
+  landcoverESACCI_indi = list()
+  transi_names = row.names(to00); 
+  transi_names = transi_names[
+    -c(grep("SRP",transi_names),
+       grep("restored",transi_names), 
+       grep("^[^f]*\\.forest",transi_names))]
+  landcoverESACCI_indi[[1]] = 
+    which(colnames(ESA_CCI) %in% transi_names[grep("cropland.",transi_names)])    # cropland
+  landcoverESACCI_indi[[2]] = 
+    which(colnames(ESA_CCI) %in% transi_names[grep("grassland.",transi_names)])# grassland
+  landcoverESACCI_indi[[3]] = 
+    which(colnames(ESA_CCI) %in% transi_names[grep("forest.",transi_names)])# forest
+  landcoverESACCI_indi[[4]] = 
+    which(colnames(ESA_CCI) %in% transi_names[grep("other.",transi_names)])# other
+  
+  lc_rr = 1
+  for (lc_rr in 1:nrow(ESACCI_lc_regions)) {
+    landcover = ESACCI_lc_regions$landcover[lc_rr]
+    ESACCI_region = ESACCI_lc_regions$ESACCI_region[lc_rr]
+    cREGIONS = ESA_CCI_aggr_map$REGION_37[
+      ESA_CCI_aggr_map$ESACCI_region == ESACCI_region & ESA_CCI_aggr_map$landcover == landcover]
+    cat(ESACCI_region,"-",cREGIONS,"-",landcover,"- ESA-CCI","\n")
+    
+    region_i = full_simu_map$REGION_37 %in% cREGIONS
+    landcover_i = which(landcoverESACCI == landcover)
+    fullY_r = ESA_CCI[region_i,landcoverESACCI_indi[[landcover_i]]]
+    
+    # get the proper X matrix
+    XX<-all_XX[full_simu_map$REGION_37 %in% cREGIONS,]
+    simus = full_simu_map$SimUID[full_simu_map$REGION_37 %in% cREGIONS]
+    
+    if (length(which(colSums(XX)==0)) >0 ) {
+      XX<-XX[,- which(colSums(XX)==0) ] #delete 0 rows (e.g. empty dummies)
+    }
+    if (length(which(colSums(XX) == nrow(XX)))) {
+      XX<-XX[,- c(1:NCOL(XX))[colSums(XX)==nrow(XX)] ] #delete dummies with only ones
+    }
+    XX = scale(XX)
+    XX = cbind(Constant = 1,XX)
+    
+    Ys = fullY_r
+    Ys = Ys / rowSums(Ys)
+    
+    # estimate
+    Y = as.matrix(Ys)
+    OK = which(complete.cases(Y))
+    notOK = which(!complete.cases(Y))
+    
+    if (length(notOK)>0) {    
+      YYY = as.matrix(Y[-notOK,-c(1)])
+      colnames(YYY) = colnames(Y)[-1]
+      XXX = as.matrix(XX[-notOK,])
+    } else {
+      YYY = as.matrix(Y[,-c(1)])
+      colnames(YYY) = colnames(Y)[-1]
+      XXX = as.matrix(XX)
+    }
+    
+    # old school
+    #res<-WmnlPGLogitMCMC(YYY,matrix(1,nrow(YYY),1),XXX,1000,1000)
+    # better
+    beta_prior_var = matrix(0,ncol(XXX),ncol(YYY)); 
+    beta_prior_mean = matrix(0,ncol(XXX),ncol(YYY)); 
+    beta_prior_var[,] = 10;
+    Y.n = matrix(1,nrow(YYY),1);
+    
+    taus = matrix(.5,ncol(XXX),ncol(YYY))
+    taus[1,] = 1
+    for (ttt in 1:ncol(YYY)) {
+      taus[which(colnames(XXX) %in% c("cropland",
+                                      "Soil2_Medium","Soil3_Heavy","Soil4_Stony","Soil5_Peats")),ttt] = 1
+      taus[which(colnames(XXX) %in% c("W_cropland",
+                                      "W_Soil2_Medium","W_Soil3_Heavy","W_Soil4_Stony","W_Soil5_Peats")),ttt] = 1
+    }
+    
+    # Kuo-Mallick approach
+    source("WmnlPGLogitKM_MCMC.R")
+    res<-WmnlPGLogitKM_MCMC(YYY,Y.n,XXX,100,50,
+                            beta_prior_var = beta_prior_var,
+                            beta_prior_mean = beta_prior_mean,
+                            tau = taus)
+    
+    if (nrow(res$pY) != nrow(YYY)) {
+      cat("Something went very very wrong!!!! \n")
+    }
+    
+    Y[OK,] = res$pY
+    if (length(notOK)>0) {
+      Y[notOK,] = 0
+    }
+    
+    cregion = cREGIONS[1]
+    for (cregion in cREGIONS) { 
+      REGION_LC = paste(cregion,landcover,sep="_")
+      
+      coeffs[[REGION_LC]] = data.frame(res$pzeta,row.names=colnames(XXX))
+      sds[[REGION_LC]] = data.frame(res$pzeta_s,row.names=colnames(XXX))
+      colnames(coeffs[[REGION_LC]]) = colnames(Y)
+      colnames(sds[[REGION_LC]]) = colnames(Y)
+      
+      bounds[[REGION_LC]] = data.frame(matrix(0,ncol(XXX),ncol(YYY)*4), row.names=colnames(XXX))
+      
+      nnames = c(.01,.05,.95,.99)
+      for (i in 1:ncol(YYY)) {
+        ppos = c((4 * (i-1) + 1):(4*i))
+        bounds[[REGION_LC]][,ppos] = t(apply(res$zetas[,,i],2,quantile,c(.01,.05,.95,.99))) 
+        colnames(bounds[[REGION_LC]])[ppos] = paste(nnames,colnames(YYY)[i],sep="_")
+      }
+      
+      pips[[REGION_LC]] = data.frame(res$pip,row.names=colnames(XXX))
+      colnames(pips[[REGION_LC]]) = colnames(YYY)
+      namesXX[[REGION_LC]] = colnames(XXX)
+      
+      # save the zeta draws explicitly
+      saveRDS(res$zetas,paste("./output3/res_file_",REGION_LC,"_ESACCI_luc.RDS",sep=""))
+    }  
+  }
+  
+  ####### do the other models as well ################
+  ####   INES-CCI ##########
+  
+  ####   North America #######
+  
+  ####   Wageningen - Europe ######
+  
+  ####   Ukraine  ##########
+  
+  
+  #### save the final posterior estimates ####
+  for (iii in 1:nrow(ESA_CCI_aggr_map)) {
+    landcover = ESA_CCI_aggr_map$landcover[iii]
+    cregion = ESA_CCI_aggr_map$REGION_37[iii]
+    REGION_LC = paste(cregion,landcover,sep="_")
+    
+    write.table(coeffs[[REGION_LC]],paste("./output3/pbeta_",REGION_LC,"_luc2.csv",sep=""),sep=",",
+                row.names=row.names(coeffs[[REGION_LC]]))
+    write.table(sds[[REGION_LC]],paste("./output3/sd_",REGION_LC,"_luc2.csv",sep=""),sep=",",
+                row.names=row.names(sds[[REGION_LC]]))
+    write.table(pips[[REGION_LC]],paste("./output3/pip_",REGION_LC,"_luc2.csv",sep=""),sep=",",
+                row.names=row.names(pips[[REGION_LC]]))
+    write.table(bounds[[REGION_LC]],paste("./output3/bounds_",REGION_LC,"_luc2.csv",sep=""),sep=",",
+                row.names=row.names(bounds[[REGION_LC]]))
+  }
+} else {
+  for (iii in 1:nrow(ESA_CCI_aggr_map)) {
+    landcover = ESA_CCI_aggr_map$landcover[iii]
+    cregion = ESA_CCI_aggr_map$REGION_37[iii]
+    REGION_LC = paste(cregion,landcover,sep="_")
+    
+    coeffs[[REGION_LC]] = read.table(paste("./output3/pbeta_",REGION_LC,"_luc2.csv",sep=""),sep=",")
+    sds[[REGION_LC]] = read.table(paste("./output3/sd_",REGION_LC,"_luc2.csv",sep=""),sep=",")
+    pips[[REGION_LC]] = read.table(paste("./output3/pip_",REGION_LC,"_luc2.csv",sep=""),sep=",")
+    bounds[[REGION_LC]] = read.table(paste("./output3/bounds_",REGION_LC,"_luc2.csv",sep=""),sep=",")
+    
+    namesXX[[REGION_LC]] = rownames(coeffs[[REGION_LC]])
+  }
+}
+############ done with regressions for priors #############
+
+
+
+### now do the scenarios #######################
+
+years = seq(2010,2100,by = 10)
+
+# scenarios = data.frame(
+#   RCPs = c('RCPref_SSP2_BIOD'),
+#   SPAs = c('BIOD_BPRICEPATH'),
+#   SSPs = c('SSP2'),
+#   stringsAsFactors = FALSE
+# )
+# load from file
+scenarios = read.csv("_scenarios.csv",stringsAsFactors = FALSE)
+
+g4m_afforestation = FALSE
+
+sss = 1
+for (sss in c(1:nrow(scenarios))) {
+#for (sss in c(1:3)) {
+#for (sss in 1:1) {
+  RCP__ = scenarios$RCPs[sss]
+  SPA__ = scenarios$SPAs[sss]
+  SSP__ = scenarios$SSPs[sss]
+  cat(as.character(SSP__),as.character(SPA__),as.character(RCP__),"\n")
+  
+  if (length(grep("1p9",RCP__))>0) {
+    g4m_afforestation = TRUE 
+  } else {
+    g4m_afforestation = FALSE
+  }
+  
+  # g4m_LU = read.csv(paste(g4m_path,"harmonized_simu_forest_area_map_msg2_06q_",
+  #                         SSP__,"SPA2_fbck_mar2016_22032016scenRCP1p9_SPA2.csv",sep=""),
+  #                   stringsAsFactors = FALSE)
+  
+  LUC_regional = LUCtotals[LUCtotals$SSP == SSP__ & 
+                             LUCtotals$SPA == SPA__ & 
+                             LUCtotals$RCP==RCP__ ,]
+  
+  ### baseline estimation t-1 = 2000, t=2010
+  comparison_table = melt(LUC_regional,id.vars = c(1:7),variable.name = "LUC")
+  comparison_table = dcast(comparison_table,SSP + SPA + RCP + region + year + unit + LUC ~ type)
+  #reorder to raw, harmonized
+  comparison_table = comparison_table[,c(colnames(comparison_table)[1:7],"raw","harmonized")]
+  comparison_table = cbind(comparison_table,
+                           diff_harmonized = comparison_table$raw - comparison_table$harmonized,
+                           downscaled = 0,
+                           diff_downscaled_raw = 0,
+                           diff_downscaled_harm = 0)
+  comparison_table$region = as.character(comparison_table$region)
+  comparison_table$year = as.character(comparison_table$year)
+  comparison_table$LUC = as.character(comparison_table$LUC)
+  
+  ### make sure the regional targets are the harmonized ones
+  LUC_regional = LUC_regional[LUC_regional$type == "harmonized",-which(colnames(LUC_regional) == "type")]
+  
+  ### include 2000 values in the comparison as well
+  aggr2000 = aggregate(LU2000_start,by = list(region = full_simu_map$REGION_37),FUN = sum)
+  aggr2000[1,1] = "World"; aggr2000[1,-1] = colSums(aggr2000[-1,-1])
+  aggr2000 = melt(aggr2000,id.vars = c(1))
+  for (iii in 1:nrow(aggr2000)) {
+    comparison_table$downscaled[comparison_table$region == aggr2000$region[iii] &
+                       comparison_table$LUC == aggr2000$variable[iii] &
+                       comparison_table$year == 2000] = aggr2000$value[iii] / 1000
+  }
+  comparison_table$diff_downscaled_raw[comparison_table$year == 2000] = 
+    (comparison_table$raw - comparison_table$downscaled)[comparison_table$year == 2000]
+  comparison_table$diff_downscaled_harm[comparison_table$year == 2000] = 
+    (comparison_table$harmonized - comparison_table$downscaled)[comparison_table$year == 2000]
+  
+  #### split target forest values into primary and managed forest (based on aggregated LU2000 data)
+  aggr2000_mng = aggr2000[aggr2000$variable == "mngforest",]
+  for (iii in 1:nrow(aggr2000_mng)) {
+    index_i = which(LUC_regional$region == aggr2000_mng$region[iii])
+    ttemp_mng = aggr2000_mng$value[iii] / 1000
+    LUC_regional$priforest[index_i] = LUC_regional$priforest[index_i] - ttemp_mng
+    LUC_regional$priforest.priforest[index_i] = 
+      LUC_regional$priforest.priforest[index_i] - ttemp_mng  
+    LUC_regional$mngforest[index_i] = LUC_regional$mngforest[index_i] + ttemp_mng
+    LUC_regional$mngforest.mngforest[index_i] = LUC_regional$mngforest.mngforest[index_i] + ttemp_mng
+  }
+  
+  
+  
+  Y_hat = data.frame(matrix(0,0,ncol(fullYYluchat) + ncol(LU2000_start) + 6))
+  colnames(Y_hat) = c("SimUID","Area","Year",
+                      "REGION","Country","Colrow",
+                      colnames(LU2000_start),
+                      colnames(fullYYluchat))
+  # save year 2000
+  projY = data.frame(fullYYluchat)
+  projY[,] = 0
+  Y_hat = rbind(Y_hat,
+                cbind(SimUID = full_simu_map$SimUID,
+                      Area =  full_simu_map$SimUArea*1000,
+                      Year = 2000,
+                      REGION = full_simu_map$REGION_37,
+                      COUNTRY = full_simu_map$country,
+                      Colrow = full_simu_map$colrowID,
+                      LU2000_start,projY)
+  )
+  
+  # reset all
+  oldY = LU2000_start
+  colnames(oldY) = colnames(LU2000_start)
+  newY = oldY; newY[,] = 0
+  
+  y = 1
+  for (y in 1:length(years)) { 
+    cat(as.character(years[y]),"\n")
+    
+    all_XX[,s1:(s1+5)] = oldY[,c("cropland","grassland","priforest","SRP","restored","other")]
+    all_XX[,s2:(s2+4)] = as.matrix(W %*% as.matrix(oldY[,c("cropland","grassland","priforest","SRP","other")]))
+    
+    oldLUC_regional = LUC_regional[LUC_regional$year == years[y] - 10,]
+    currentLUC_regional = LUC_regional[LUC_regional$year == years[y],]
+    
+    tpop = pop_data[pop_data$SSP == SSP__ & 
+                      pop_data$type == "Total" &
+                      pop_data$year == years[y],]
+    all_XX[,tp1] = tpop$value
+    all_XX[,tp2] = as.matrix(W %*% as.matrix(tpop$value))
+    rpop = pop_data[pop_data$SSP == SSP__ & 
+                      pop_data$type == "Rural" &
+                      pop_data$year == years[y],]
+    all_XX[,rp1] = rpop$value
+    all_XX[,rp2] = as.matrix(W %*% as.matrix(rpop$value))
+    
+    projY = data.frame(fullYYluchat)
+    projY[,] = 0
+    
+    
+    ### calculate allowed expansion area
+    name_indi = matrix(unlist(strsplit(colnames(allow_expansion),"[.]")),ncol(allow_expansion),2,byrow = TRUE)[,1]
+    expansion_areas = oldY[,name_indi]
+    colnames(expansion_areas) = colnames(projY)
+    allow_expansion_areas = expansion_areas * allow_expansion
+    
+    ### extract ex-ante known flow information
+    if (g4m_afforestation) {
+      afforest = g4m_LU$onv.mng[g4m_LU$year == years[y]]
+      afforest_from_onv = apply(
+        cbind(afforest,oldY$other,allow_expansion_areas$other.mngforest),
+        c(1),min)
+      afforest_from_grass = apply(
+        cbind(afforest - afforest_from_onv, oldY$grassland,allow_expansion_areas$grassland.mngforest),
+        c(1),min)
+      afforest_from_crop = apply(
+        cbind(afforest - afforest_from_onv - afforest_from_grass, 
+              oldY$cropland,allow_expansion_areas$cropland.mngforest),
+        c(1),min)
+      afforest_from_SRP = apply(
+        cbind(afforest - afforest_from_onv - afforest_from_grass - afforest_from_crop, 
+              oldY$SRP,allow_expansion_areas$SRP.mngforest),
+        c(1),min)
+      afforest_from_priforest = apply(
+        cbind(afforest - afforest_from_onv - afforest_from_grass - afforest_from_crop - afforest_from_SRP, 
+              oldY$priforest,allow_expansion_areas$priforest.mngforest),
+        c(1),min)
+      
+      projY$other.mngforest = afforest_from_onv
+      projY$grassland.mngforest = afforest_from_grass
+      projY$cropland.mngforest = afforest_from_crop
+      projY$SRP.mngforest = afforest_from_SRP
+      projY$priforest.mngforest = afforest_from_priforest
+      
+      ### integrate g4m projections
+      #### add afforestation to targets flows
+      # aggregate afforestation by region
+      afforest_region = aggregate(
+        projY[,c("cropland.mngforest","grassland.mngforest","priforest.mngforest","SRP.mngforest","other.mngforest")],
+        by = list(region = full_simu_map$REGION_37),FUN = sum)
+      afforest_region[1,1] = "World"; afforest_region[1,-1] = colSums(afforest_region[-1,-1])
+      afforest_region = afforest_region[match(currentLUC_regional$region,afforest_region$region),]
+      diff_afforest_region = afforest_region[,-1] /1000 - 
+        currentLUC_regional[,c("cropland.mngforest","grassland.mngforest","priforest.mngforest","SRP.mngforest","other.mngforest")]
+      
+      ### fill regional flows to newforest with aggregated g4m values
+      luclasses = c("cropland","grassland","priforest","SRP","other")
+      rrr = 1
+      for (rrr in 1:(nrow(afforest_region)-1)) {
+        region_r = afforest_region$region[rrr]
+        lcc = 1
+        for (lcc in 1:length(luclasses)) {
+          ## need to reduce luc.luc flows by deforestation amount
+          ##   now and in all future cases (otherwise totals do not fit!)
+          luclass = luclasses[lcc]
+          luclass_luclass = paste(luclass,luclass,sep=".")
+          luclass_forest = paste(luclass,"mngforest",sep=".")
+          changeyears = years[years >= years[y]]
+          futureyears = years[years > years[y]]
+          ttemp = sum(projY[full_simu_map$REGION_37 == region_r,luclass_forest]) / 1000
+          change_index = which(LUC_regional$year %in% changeyears &
+                                 LUC_regional$region == region_r)
+          
+          
+          LUC_regional[change_index,c(luclass,luclass_luclass)] = 
+            LUC_regional[change_index,c(luclass,luclass_luclass)] - ttemp
+          # make sure we don"t exceed available land
+          if (any(LUC_regional[change_index,c(luclass,luclass_luclass)] < 0)) {
+            cat(region_r,rrr,lcc,"\n")
+            #need to correct this
+            too_much = min(LUC_regional[change_index,c(luclass,luclass_luclass)])
+            # add back the amount
+            LUC_regional[change_index,c(luclass,luclass_luclass)] = 
+              LUC_regional[change_index,c(luclass,luclass_luclass)] + abs(too_much)
+            
+            #correct spatially explicit deforestation - for now by proportinal reduction
+            ttemp_simu = projY[full_simu_map$REGION_37 == region_r,luclass_forest]
+            ttemp_simu = ttemp_simu - ttemp_simu * abs(too_much) / ttemp
+            projY[full_simu_map$REGION_37 == region_r,luclass_forest] = ttemp_simu
+            ttemp = sum(projY[full_simu_map$REGION_37 == region_r,luclass_forest]) / 1000
+          }
+          # add forest to all future forest years
+          if (length(futureyears)>0) {
+            LUC_regional[
+              LUC_regional$year %in% futureyears & 
+                LUC_regional$region == region_r,c("mngforest","mngforest.mngforest")] =  
+              LUC_regional[
+                LUC_regional$year %in% futureyears & 
+                  LUC_regional$region == region_r,c("mngforest","mngforest.mngforest")] +
+              ttemp
+          }
+          
+          # record afforestation in totals - just in current year
+          LUC_regional[LUC_regional$year == years[y] &
+                         LUC_regional$region == region_r,luclass_forest] =  ttemp
+          LUC_regional[LUC_regional$year == years[y] &
+                         LUC_regional$region == region_r,c("mngforest")] =  LUC_regional[LUC_regional$year == years[y] &
+                                                                                        LUC_regional$region == region_r,c("mngforest")] +  ttemp
+          
+          currentLUC_regional[currentLUC_regional$region == region_r,c("mngforest",luclass,luclass_luclass,luclass_forest)] =
+            LUC_regional[LUC_regional$year == years[y] &
+                           LUC_regional$region == region_r,c("mngforest",luclass,luclass_luclass,luclass_forest)]
+        }
+      }
+      if (any(currentLUC_regional[,-c(1:6)]< 0) ) {
+        if (any(currentLUC_regional[,-c(1:6)]< -10^-6) ) {
+          stop("Negative target flows!")
+        } else { #only numerics
+          ttemp = currentLUC_regional[,-c(1:6)]
+          ttemp[ttemp<0] = 0
+          currentLUC_regional[,-c(1:6)] = ttemp
+        }
+      }
+      
+      
+      # calculate expansion area without G4M newforest/ oldforest flows
+      name_indi_G4M = name_indi
+      name_indi_G4M[name_indi_G4M == "cropland"] = "cropland.mngforest"
+      name_indi_G4M[name_indi_G4M == "grassland"] = "grassland.mngforest"
+      name_indi_G4M[name_indi_G4M == "SRP"] = "SRP.mngforest"
+      name_indi_G4M[name_indi_G4M == "priforest"] = "priforest.mngforest"
+      name_indi_G4M[name_indi_G4M == "other"] = "other.mngforest"
+      name_indi_G4M[name_indi_G4M %in% c("mngforest","restored","urban")] = NA
+      expansion_areas_G4M = oldY[,name_indi]
+      colnames(expansion_areas_G4M) = colnames(projY)
+      expansion_areas_G4M[,which(!is.na(name_indi_G4M))] = 
+        expansion_areas_G4M[,which(!is.na(name_indi_G4M))] -
+        projY[,name_indi_G4M[!is.na(name_indi_G4M)]]
+      # add G4M oldforest restrictions
+      allow_expansion_areas_G4M = expansion_areas_G4M * allow_expansion
+      allow_expansion_G4M = (allow_expansion_areas_G4M>0) * 1
+    } else {
+      allow_expansion_areas_G4M = allow_expansion_areas
+      allow_expansion_G4M = allow_expansion
+    }
+    
+    ### project Yhat globally
+    iii = 1
+    for (iii in 1:nrow(ESA_CCI_aggr_map)) {
+      landcover = ESA_CCI_aggr_map$landcover[iii]
+      cregion = ESA_CCI_aggr_map$REGION_37[iii]
+      curr_lab = paste(cregion,landcover,sep="_")
+      
+      region_i = full_simu_map$REGION_37 == cregion
+      aXX<-all_XX[region_i,]
+      
+      XX = aXX[,colnames(aXX) %in% namesXX[[curr_lab]]] # get the correct expl. vars
+      XX = scale(XX)
+      XX[is.na(XX)] = 0
+      XX = cbind(Constant = 1,XX)
+      
+      XXX = as.matrix(XX)
+      bbeta = as.matrix(coeffs[[curr_lab]])  ### Forest as exogenous
+      
+      #make sure the dimesions match!
+      miss1 = which(!row.names(bbeta) %in% colnames(XXX))
+      if (length(miss1) > 0) {
+        bbeta = bbeta[-miss1,]
+      }
+      miss2 = which(!colnames(XXX) %in% row.names(bbeta))
+      if (length(miss2) > 0) {
+        XXX = XXX[,-miss2]
+      }
+      
+      ### temporary!! - the ordering of coefficients is wrong, the own flows are at the end!!!
+      labs = colnames(bbeta)
+      bbeta = bbeta[,c(ncol(bbeta),1:(ncol(bbeta)-1))]
+      colnames(bbeta) = labs
+      ### end temp
+      mu = XXX %*% bbeta
+      ### add SRP and restored priors
+      if (landcover != "forest") {
+        if (landcover == "cropland") {
+          ttemp = data.frame(
+            SRP_suitability$SRP_NPP[region_i]* allow_expansion_areas_G4M$cropland.SRP[region_i],
+            RstLnd_prior$prior_CrpLnd_RstLnd[region_i] * allow_expansion_areas_G4M$cropland.restored[region_i]
+            )
+          colnames(ttemp) = c(paste(landcover,"SRP",sep="."),paste(landcover,"restored",sep="."))
+        } else if (landcover == "grassland") {
+          ttemp = data.frame(
+            SRP_suitability$SRP_NPP[region_i]* allow_expansion_areas_G4M$grassland.SRP[region_i],
+            RstLnd_prior$prior_GrsLnd_RstLnd[region_i] * allow_expansion_areas_G4M$grassland.restored[region_i]
+          )
+          colnames(ttemp) = c(paste(landcover,"SRP",sep="."),paste(landcover,"restored",sep="."))
+        } else if (landcover == "other") { # no restored, only SRP
+          ttemp = data.frame(
+            SRP_suitability$SRP_NPP[region_i]* allow_expansion_areas_G4M$other.SRP[region_i]
+          )
+          colnames(ttemp) = paste(landcover,"SRP",sep=".")
+        } 
+        ttemp = scale(ttemp); ttemp[is.na(ttemp)] = 0
+        mu = cbind(mu,ttemp)
+      } else {
+        # re-label from ESA-CCI "forest" to "priforest"
+        landcover = "priforest"
+        colnames(mu) = gsub("forest","priforest",colnames(mu))
+      }
+      expmu = exp(mu)[,landcover_map_G4M[[landcover]]]
+      expmu = expmu * allow_expansion_G4M[region_i,landcover_map_G4M[[landcover]]]
+      YYhat <- expmu / rowSums(expmu)
+      YYhat[is.na(YYhat)] = 0
+      
+      areas = allow_expansion_areas_G4M[region_i,landcover_map_G4M[[landcover]]]
+      
+      YYhat_area = YYhat*areas
+      targets = currentLUC_regional[
+        currentLUC_regional$region == cregion,-c(1:12)] 
+      targets = targets[grep(paste(landcover,".",sep=""),colnames(targets))]
+      if (landcover!="forest") { # we either have no deforestation, or it stems from G4M
+        targets = targets[-grep(".mngforest",colnames(targets))]
+      }
+      if (abs(sum(YYhat_area)/1000 - sum(targets)) > 10) {
+        cat(curr_lab,sum(YYhat_area)/1000,sum(targets),"\n")
+      }
+      
+      projY[region_i,landcover_map_G4M[[landcover]] ] = YYhat_area
+    }
+    #### the SRP prior assumptions
+    projY$SRP.SRP = SRP_suitability$SRP_NPP
+    projY$SRP.other = max(SRP_suitability$SRP_NPP) - SRP_suitability$SRP_NPP
+    projY$SRP.other[is.na(projY$SRP.other) | is.infinite(projY$SRP.other)] = 0
+    ttemp = projY[,c("SRP.SRP","SRP.other")]
+    ttemp = ttemp * allow_expansion[,c("SRP.SRP","SRP.other")]
+    ttemp = ttemp/rowSums(ttemp); ttemp[is.na(ttemp)] = 0
+    projY[,c("SRP.SRP","SRP.other")] = ttemp* allow_expansion_areas_G4M[,c("SRP.SRP","SRP.other")]
+    ##### the restored
+    projY$restored.restored = oldY$restored
+    #### the urban
+    projY$urban.urban = oldY$urban
+    #### the managed forest
+    projY$mngforest.mngforest = oldY$mngforest
+    
+    #######################
+    
+    all_diffs = data.frame(
+      region = as.character(currentLUC_regional$region[-nrow(currentLUC_regional)]),
+      diff_crop = 100,
+      diff_grass = 100,
+      diff_priforest = 100,
+      diff_SRP = 100,
+      diff_other = 100
+    )
+    
+    firstRun = TRUE
+    forceEnd = FALSE
+    countr = 1
+    cutoff = .000001
+    cutoff2 = 0
+    allowedErr = 1
+    
+    old_projY = projY
+    projY_pctLC = data.frame(matrix(0,nrow(projY),ncol(projY)))
+    colnames(projY_pctLC) = colnames(projY)
+    lc = 1
+    for (lc in 1:length(landcover_map_ds)) {
+      ttt = projY[,landcover_map_ds[[lc]]]
+      ttt = ttt / rowSums(ttt)
+      ttt[is.na(ttt)] = 0
+      projY_pctLC[,landcover_map_ds[[lc]]] = ttt
+      areas = allow_expansion_areas_G4M[,landcover_map_ds[[lc]]]
+      projY[,landcover_map_ds[[lc]]] = ttt * areas
+      #ttt2 =
+      # geosmooth(as.matrix(ttt),nearest_simu,.00001,max_knn = 7,cutoff = 0)
+      #ttt2 = ttt2 * allow_expansion_G4M[,landcover_map_ds[[lc]]]
+      #ttt2 = ttt2/ rowSums(ttt2); ttt2[is.na(ttt2)] = 0
+      #areas = allow_expansion_areas_G4M[,landcover_map_ds[[lc]]]
+      #projY[,landcover_map_ds[[lc]]] = ttt2 * areas
+      #projY_pctLC[,landcover_map_ds[[lc]]] = ttt2
+    }
+    old_projY2 = projY
+    aaa = aggregate(projY,by = list(region = full_simu_map$REGION_37),FUN = sum)
+    aaa = cbind(aaa,Total = rowSums(aaa[,-1]))
+    aaa = aaa[match(currentLUC_regional$region,aaa$region),]
+    data.frame(
+      region = currentLUC_regional$region,
+      proj = aaa$Total,tot = rowSums(currentLUC_regional[,-c(1:12)] * 1000),
+      diff = aaa$Total- rowSums(currentLUC_regional[,-c(1:12)] * 1000))
+    
+    while (firstRun == TRUE || (any(
+      c(as.double(all_diffs$diff_crop),
+        as.double(all_diffs$diff_grass),
+        as.double(all_diffs$diff_oldfor),
+        as.double(all_diffs$diff_SRP),
+        as.double(all_diffs$diff_other)
+      )>allowedErr) && !forceEnd )   ) {
+      
+      REGION = regions[17]
+      for (REGION in regions) {
+        region_i = full_simu_map$REGION_37 == REGION
+        diff_i = which(all_diffs$region == REGION)
+        # get aggregate target values
+        targets = currentLUC_regional[
+          currentLUC_regional$region == REGION,-c(1:12)] * 1000
+        
+        cat(REGION,"\n")
+        lc = 2
+        for (lc in 1:length(landcover_map_ds)) {
+          ttarget =  targets[landcover_map_ds[[lc]]]
+          
+          area_mat = allow_expansion_areas_G4M[region_i,landcover_map_ds[[lc]]]
+          expansion_mat = allow_expansion_G4M[region_i,landcover_map_ds[[lc]]]
+          optimYY = projY_pctLC[region_i,landcover_map_ds[[lc]]]
+          
+          if (all(ttarget[-1] == 0)) {
+            optimYY[,] = 0
+            optimYY[,1] = 1  ##conserve the own flows
+            optimYY_area = area_mat * optimYY
+            all_diffs[diff_i,lc + 1] = 0
+            projY_pctLC[region_i,landcover_map_ds[[lc]]] = optimYY
+            projY[region_i,landcover_map_ds[[lc]]] = optimYY_area
+          } else {
+            if (sum(optimYY * area_mat) == 0 && any(ttarget > 0)) {
+              stop("0 in pct file")
+            }
+            
+            # make very sure that no target exceeds available area
+            max_optimYY = optimYY
+            max_optimYY[max_optimYY>0] = 1
+            ttarget = apply(rbind(ttarget,
+                                  colSums(area_mat),
+                                  colSums(max_optimYY * area_mat)),c(2),min)
+            
+            
+            # substract target area differences from own flows
+            area_diff = sum(ttarget) - sum(optimYY * area_mat)
+            if (area_diff < ttarget[1]) { # own flows are large enough to be substracted
+              ttarget[1] = ttarget[1] - area_diff
+            } else {
+              ttarget[1] = ttarget[1] - area_diff
+              rest_diff = abs(ttarget[1]); ttarget[1] = 0
+              indi = which(ttarget > 0)
+              ttarget[indi] = ttarget[indi] - rest_diff / length(indi)
+            }
+             
+            if (all_diffs[diff_i,lc + 1] > allowedErr) {
+              ### make sure the sums are exactly equal
+              if (any(ttarget == 0)) {
+               indi = which(ttarget == 0)
+               indi2 = which(ttarget > 0)
+               for (iii in indi) {
+                 ttemp = optimYY[,iii]
+                 if (length(indi2)>1) {
+                  ttemp2 = rowSums(expansion_mat[,indi2])
+                 } else {ttemp2 = expansion_mat[,indi2]}
+                 ttemp = ttemp / ttemp2; ttemp[is.na(ttemp)] = 0
+                 optimYY[,indi2] = optimYY[,indi2] + 
+                   kronecker(ttemp,matrix(1,1,length(indi2))) * expansion_mat[,indi2]
+                 optimYY[,iii] = 0
+               }
+              }
+              
+              ### cut out columns where target and optimYY == 0
+              zero_cols = (ttarget == 0 & colSums(optimYY) == 0)
+              optimYY[,zero_cols] = 0
+              optimYY2 = optimYY[,!zero_cols]
+              area_mat2 = area_mat[,!zero_cols]
+              ttarget2 = ttarget[!zero_cols]
+              
+              if (length(ttarget2)  == 1) {
+                ttemp = list()
+                ttemp$yhat = optimYY2
+                ttemp$yhat_area = optimYY2 * area_mat2
+                ttemp$optim_val = sum(ttemp$yhat_area) - ttarget2
+                ttemp$message = "No optimization needed"
+              } else {
+                start_vals = ttarget2 / colSums(optimYY2* area_mat2)
+                start_vals = start_vals / as.double(start_vals[length(start_vals)])
+                start_vals = as.matrix(start_vals[-length(start_vals)])
+                start_vals[is.na(start_vals)] = 1
+                if (length(ttarget2) == 2) {
+                  #rres = optim(start_vals,
+                  #             fcheat3p2,lower= 0,method = "L-BFGS-B",
+                  #             y = optimYY2,aareas = area_mat2,targets = ttarget2,cp = cutoff2)
+                  rres = nlminb(start_vals,
+                               fcheat3p2,lower= 10^-10,
+                               y = optimYY2,aareas = area_mat2,targets = ttarget2,cp = cutoff2)
+                } else {
+                  rres = nmkb(start_vals,
+                              fcheat3p2,
+                              lower = 0,
+                              #control = list(tol = 1.e-10),
+                              y = optimYY2,aareas = area_mat2,targets = ttarget2,cp = cutoff2)
+                }
+                ttemp = fcheat3p2(rres$par, optimYY2, area_mat2, ttarget2, cutoff2, FALSE)
+                ttemp$message = rres$message
+              }
+              cat(" ",REGION,"-",landcover_map_ds[[lc]][1],ttemp$optim_val, ttemp$message,"\n")
+              all_diffs[diff_i,lc + 1] = ttemp$optim_val
+              
+              #put back columns where ttarget and optimYY were ==0
+              optimYY_area = optimYY; optimYY_area[,] = 0
+              optimYY[,!zero_cols] = ttemp$yhat
+              optimYY_area[,!zero_cols] = ttemp$yhat_area
+              
+              # put it back
+              projY_pctLC[region_i,landcover_map_ds[[lc]]] = optimYY
+              projY[region_i,landcover_map_ds[[lc]]] = optimYY_area
+            }
+          }
+        }
+        #cat(" largest difference was",max(all_diffs[diff_i,-1]))
+        #cat(" in",
+        #    names(landcover_map_ds)[which(all_diffs[diff_i,-1] == max(all_diffs[diff_i,-1]) )],"\n")
+      }
+      firstRun = FALSE
+      if (countr>10) {
+        cat("this is a long loop \n")
+        culprit_i = which(all_diffs[,-1] == max(all_diffs[,-1]),arr.ind = T)
+        cat("Problem is with",as.character(all_diffs[culprit_i[1],1]),"and",
+            colnames(all_diffs)[culprit_i[2] + 1],"with",
+            all_diffs[culprit_i[1],culprit_i[2] + 1],"\n")
+        #if (all_diffs[culprit_i[1],culprit_i[2] + 1]>30) {
+        #  stop("This needs to be fixed!")
+        #}
+        
+        ####some diagnostic suggestions
+        #View(cbind(all_diffs$region,round(all_diffs[,-1],2)))
+        
+        #old_diffs = comparison_table[comparison_table$year == 2010,c("region","LUC","diff_downscaled_harm")]
+        #old_diffs = dcast(old_diffs,region ~LUC,value.var = "diff_downscaled_harm")
+        #View(cbind(old_diffs$region,round(old_diffs[,c("cropland","grassland","priforest","SRP","restored","other","urban")],2)))
+        
+        cat("
+            Problem reported, now let us move on.
+            WARNING: results from here on will be weird!
+            Use at own peril.\n")
+        forceEnd = TRUE
+      }
+      cat("iteration:",countr,"\n")
+      countr = countr + 1
+    }
+    
+    allowedErr = allowedErr + allowedErr
+    
+    ### fill up SimUs in region "0" with original 
+    ###  minus the afforestation
+    indi0 = which(full_simu_map$REGION_37 == "0")
+    ttemp0 = oldY[indi0,]
+    projY[indi0,c("cropland.cropland","grassland.grassland",
+                  "priforest.priforest","mngforest.mngforest",
+                  "SRP.SRP","restored.restored","other.other",
+                  "urban.urban")] = 0
+    ttempLUC0 = as.matrix(projY[indi0,]) %*% as.matrix(to00)
+    projY[indi0,c("cropland.cropland","grassland.grassland",
+                  "priforest.priforest","mngforest.mngforest",
+                  "SRP.SRP","restored.restored","other.other",
+                  "urban.urban")] = ttemp0 - ttempLUC0
+    if (max(abs(range(full_simu_map$SimUArea * 1000 - rowSums(projY)))) > 10^-8) {
+      stop("We exceed total SimU area!")
+    }
+    
+    
+    oldY = as.matrix(projY) %*% as.matrix(to10)
+    colnames(oldY) = colnames(LU2000)
+    oldY = data.frame(oldY)
+    
+    
+    regionalAggregatesLUC = aggregate(projY,by=list(region = full_simu_map$REGION_37),FUN = sum)  
+    regionalAggregatesLUC[1,1] = "World"
+    regionalAggregatesLUC[1,-1] = colSums(regionalAggregatesLUC[-1,-1])
+    regionalAggregatesLUC = cbind(regionalAggregatesLUC,total = rowSums(regionalAggregatesLUC[,-1]))
+    regionalAggregates = aggregate(oldY,by=list(region = full_simu_map$REGION_37),FUN = sum)  
+    regionalAggregates[1,1] = "World"
+    regionalAggregates[1,-1] = colSums(regionalAggregates[-1,-1])
+    regionalAggregates = cbind(regionalAggregates, regionalAggregatesLUC, total = rowSums(regionalAggregatesLUC[,-1]))
+    regionalAggregates = melt(regionalAggregates,id.vars = c(1),variable.name = "class")
+    
+    countryAggregatesLUC = aggregate(projY,by=list(country = full_simu_map$country),FUN = sum)  
+    countryAggregates = aggregate(oldY,by=list(region = full_simu_map$country),FUN = sum)  
+    countryAggregates = cbind(countryAggregates,countryAggregatesLUC,total = rowSums(countryAggregatesLUC[,-1]))
+    countryAggregates = melt(countryAggregates,id.vars = c(1),variable.name = "class")
+    
+    currentLUC_regional = cbind(currentLUC_regional,total = rowSums(currentLUC_regional[,15:41]))
+    for (i in 1:nrow(regionalAggregates)) {
+      pos_i = which(comparison_table$year == as.character(years[y]) & 
+                      comparison_table$LUC == as.character(regionalAggregates$class[i]) &
+                      comparison_table$region == as.character(regionalAggregates$region[i]))
+      pos_j = which(currentLUC_regional$region == as.character(regionalAggregates$region[i]))
+      if (length(pos_i)>0 && length(pos_j)>0) {
+        comparison_table$harmonized[pos_i] = currentLUC_regional[pos_j,as.character(regionalAggregates$class[i])]
+        comparison_table$downscaled[pos_i] = regionalAggregates$value[i]/1000
+        
+        comparison_table$diff_downscaled_raw[pos_i] = 
+          comparison_table$raw[pos_i] - comparison_table$downscaled[pos_i]
+        comparison_table$diff_downscaled_harm[pos_i] = 
+          comparison_table$harmonized[pos_i] - comparison_table$downscaled[pos_i]
+      }
+    }
+    #max(comparison_table[comparison_table$diff!=0,"diff"])
+    
+    ### done with re-weighting #######
+    ##################################
+    
+    # done with all regions for t
+    Y_hat = rbind(Y_hat,
+                  cbind(SimUID = full_simu_map$SimUID,
+                        Area =  full_simu_map$SimUArea*1000,
+                        Year =as.character(years[y]),
+                        REGION = full_simu_map$REGION_37,
+                        COUNTRY = full_simu_map$country,
+                        Colrow = full_simu_map$colrowID,
+                        oldY,projY)
+    )
+  }
+  # done with all t for scenario, now save results
+  
+  
+  # save the scenario results - pctof simu
+  ffname = paste(target_path,"res_",
+                 as.character(SPA__),"_",
+                 as.character(RCP__),"_",
+                 as.character(SSP__),"__luc.csv",sep="")
+  write.table(Y_hat,ffname,sep=",",row.names = FALSE)
+  
+  
+  ffname = paste(target_path,"res_",
+                       as.character(SPA__),"_",
+                       as.character(RCP__),"_",
+                       as.character(SSP__),"__comparison_luc.csv",sep="")
+  write.table(comparison_table,ffname,sep=",",row.names = FALSE)
+  
+  # Some more diagnostics
+  #for (iii in 1:length(years)) {
+  #  cat(range(rowSums(Y_hat[Y_hat$Year == years[iii],7:14]) - Y_hat$Area[Y_hat$Year == years[iii]]),"\n")
+  #  cat(range(rowSums(Y_hat[Y_hat$Year == years[iii],-c(1:14)]) - Y_hat$Area[Y_hat$Year == years[iii]]),"\n")
+  #  cat("-----\n")
+  #}
+     
+}
