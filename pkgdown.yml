@@ -1,0 +1,10 @@
+pandoc: 2.7.3
+pkgdown: 2.0.3
+pkgdown_sha: ~
+articles:
+  downscalr_tutorial: downscalr_tutorial.html
+last_built: 2022-04-28T12:50Z
+urls:
+  reference: https://tkrisztin.github.io/downscalr/reference
+  article: https://tkrisztin.github.io/downscalr/articles
+
