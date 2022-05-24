@@ -1,5 +1,5 @@
 # downscalr
-A package for high-resolution simulation of land-use change projections, with support for downscaling. 
+An R package for downscaling of land-use and land-use change projections. You find the same information (and example vignettes) on the [pkgdown](https://pkgdown.r-lib.org/) website [here](https://tkrisztin.github.io/downscalr/).
 
 This package was developed in the context of the SPIPA Argentina project, in joint cooperation with colleagues from the [National Agricultural Technology Institute](https://www.argentina.gob.ar/inta). The main purpose of this package is to combine IIASA's [DownScale](https://github.com/iiasa/DownScale) model, with INTA's Argentina specific implementation of [Dinamica EGO](https://csr.ufmg.br/dinamica/) for the purpose of downscaling [FABLE Calculator](https://www.abstract-landscapes.com/fable-calculator) output. This enables a more in-depth representation of high-resolution land-use change projections.
 
