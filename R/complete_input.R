@@ -7,6 +7,7 @@
 #' Internal function. Adds missing columns and completes potential sparse dataframes.
 #' @keywords internal
 complete_targets = function(targets) {
+  lu.from = lu.to = ns = NULL
   if (!tibble::has_name(targets,"lu.from")) {
     targets = cbind(lu.from = PLCHOLD_LU,targets)
   } else {
@@ -104,7 +105,7 @@ complete_priors = function(priors,xmat) {
   #Add all combinations
   # lu.from & lu.to defined to fool the package checker with dplyr namebindings
   #   (.data$ does not work in nested function)
-  lu.from = lu.to = NULL
+  lu.from = lu.to = ns =  NULL
   priors = priors %>%  dplyr::right_join(
     priors %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
     tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
@@ -132,7 +133,7 @@ complete_restrictions = function(restrictions,xmat) {
   # Add all combinations
   # lu.from & lu.to defined to fool the package checker with dplyr namebindings
   #   (.data$ does not work in nested function)
-  lu.from = lu.to = NULL
+  lu.from = lu.to = ns = NULL
   restrictions = restrictions %>%  dplyr::right_join(
     restrictions %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
       tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),

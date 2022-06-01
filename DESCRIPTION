@@ -1,25 +1,41 @@
-Package: downscalr
 Type: Package
+Package: downscalr
 Title: Downscaling land-use change projections
 Version: 0.1.0
 Authors@R: c(
-    person("Krisztin", "Tamás", ,"krisztin@iiasa.ac.at", c("aut", "cre")),
-    person("Wögerer", "Michael", ,"wogerer@iiasa.ac.at", "aut"),
-    person("Ringwald", "Leopold", ,"ringwald@iiasa.ac.at", "aut")
-    )
+    person("Krisztin", "Tamás", , "krisztin@iiasa.ac.at", role = c("aut", "cre")),
+    person("Wögerer", "Michael", , "wogerer@iiasa.ac.at", role = "aut"),
+    person("Ringwald", "Leopold", , "ringwald@iiasa.ac.at", role = "aut")
+  )
 Maintainer: Tamás Krisztin <krisztin@iiasa.ac.at>
-Description: For high-resolution projections of future land-use change IAMs often rely on downscaled projections. This package provides econometric models for prior estimation and a flexible, transparent and easy to use framework to downscale such projections. 
+Description: For high-resolution projections of future land-use change
+    IAMs often rely on downscaled projections. This package provides
+    econometric models for prior estimation and a flexible, transparent
+    and easy to use framework to downscale such projections.
 License: MIT + file LICENSE
-Depends: R (>= 3.5.0)
-Encoding: UTF-8
-Imports: MASS, BayesLogit, nloptr, tidyr, dplyr, tibble, raster, ggplot2, ggthemes
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
 URL: https://github.com/tkrisztin/downscalr,
     https://tkrisztin.github.io/downscalr/
 BugReports: https://github.com/tkrisztin/downscalr/issues
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    BayesLogit,
+    dplyr,
+    ggplot2,
+    ggthemes,
+    MASS,
+    methods,
+    nloptr,
+    raster,
+    stats,
+    tibble,
+    tidyr
 Suggests: 
-    rmarkdown,
+    knitr,
+    rmarkdown
+VignetteBuilder: 
     knitr
-VignetteBuilder: knitr
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0

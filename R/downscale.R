@@ -32,6 +32,7 @@ downscale = function(targets,start.areas,xmat,betas,
                      xmat.proj = NULL,xmat.dyn.fun = xmat.sum_to,
                      priors = NULL,restrictions=NULL,
                      options = downscale_control()) {
+  lu.from = value = proj = ks = dyn = NULL
   # Handle input checking
   err.txt = options$err.txt
   targets = complete_targets(targets)

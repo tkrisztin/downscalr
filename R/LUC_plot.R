@@ -17,16 +17,18 @@
 #' @import ggplot2
 #' @import dplyr
 #' @import ggthemes
+#' @import methods
 #'
 #' @examples
 #' ## A basic example
 LUC_plot <- function(res, rasterfile, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
   
-  plot_spdf <- as(rasterfile, "SpatialPixelsDataFrame")
-  plot_df <- as.data.frame(plot_spdf)
+  plot_spdf <- methods::as(rasterfile, "SpatialPixelsDataFrame")
+  plot_df <- methods::as(plot_spdf,"data.frame")
   
   colnames(plot_df) <- c("ns", "x", "y")
   
+  ns = lu.to = times = value = x = y= NULL
   if(is.null(year) & is.null(LU)){
     inputs <- res %>% dplyr::group_by(ns, lu.to, times) %>% dplyr::summarise(value = sum(value),.groups = "keep")
   } else if(!(is.null(year) | is.null(LU))){
