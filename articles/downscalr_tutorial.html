@@ -8,8 +8,8 @@
 <meta name="description" content="downscalr">
 <title>Downscaling land-use change projections in Argentina --- a tutorial using `downscalr` • downscalr</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Downscaling land-use change projections in Argentina --- a tutorial using `downscalr`">
 <meta property="og:description" content="downscalr">
@@ -66,7 +66,7 @@
 
 
 <script src="downscalr_tutorial_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
-  <main id="main"><div class="page-header">
+  <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Downscaling land-use change projections in Argentina --- a tutorial using `downscalr`</h1>
             
       
@@ -93,14 +93,14 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 </h2>
 <p>Before we can start with the actual downscaling, some required packages have to be attached to your <code>R session</code>. The first three are standard packages to facilitate data manipulation and the last one, of course, is the subject of this tutorial.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#install.packages("tidyr","tibble","dplyr")</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
-
-
-<span class="co">#devtools::install_github("tkrisztin/downscalr",ref="HEAD")</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tkrisztin/downscalr" class="external-link">downscalr</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#install.packages("tidyr","tibble","dplyr")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="co">#devtools::install_github("tkrisztin/downscalr",ref="HEAD")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tkrisztin/downscalr" class="external-link">downscalr</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="input-data-prior-module">Input data &amp; Prior module<a class="anchor" aria-label="anchor" href="#input-data-prior-module"></a>
 </h3>
@@ -111,38 +111,38 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 </h4>
 <p>First, load the examplary data within <code>downscalr</code> package and transform it into the necessary format for the MNL model.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Set example land use change origin to Cropland</span>
-<span class="va">example_LU_from</span> <span class="op">&lt;-</span> <span class="st">"Cropland"</span>
-
-<span class="co"># load data</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_df</span>,<span class="va">argentina_luc</span><span class="op">)</span>
-
-<span class="co"># Prepare data for econometric Multinomial logistic (MNL) regression</span>
-<span class="va">Yraw</span> <span class="op">&lt;-</span> <span class="va">argentina_luc</span>
-
-<span class="va">Xraw</span> <span class="op">&lt;-</span> <span class="va">argentina_df</span><span class="op">$</span><span class="va">xmat</span>
-
-<span class="va">Y</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Yraw</span>,<span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span> <span class="op">&amp;</span> <span class="va">Ts</span> <span class="op">==</span> <span class="fl">2000</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-        <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">lu.to</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-          <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">column_to_rownames</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"ns"</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-            <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lu.from</span>, <span class="va">Ts</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">X</span> <span class="op">&lt;-</span> <span class="va">Xraw</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="st">"ks"</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">ns</span>,<span class="va">Y</span><span class="op">$</span><span class="va">ns</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-        <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">column_to_rownames</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"ns"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Set example land use change origin to Cropland</span></span>
+<span><span class="va">example_LU_from</span> <span class="op">&lt;-</span> <span class="st">"Cropland"</span></span>
+<span></span>
+<span><span class="co"># load data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_df</span>,<span class="va">argentina_luc</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Prepare data for econometric Multinomial logistic (MNL) regression</span></span>
+<span><span class="va">Yraw</span> <span class="op">&lt;-</span> <span class="va">argentina_luc</span></span>
+<span></span>
+<span><span class="va">Xraw</span> <span class="op">&lt;-</span> <span class="va">argentina_df</span><span class="op">$</span><span class="va">xmat</span></span>
+<span></span>
+<span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Yraw</span>,<span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span> <span class="op">&amp;</span> <span class="va">Ts</span> <span class="op">==</span> <span class="fl">2000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>        <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">lu.to</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>          <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">column_to_rownames</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"ns"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>            <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lu.from</span>, <span class="va">Ts</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">Xraw</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="st">"ks"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">ns</span>,<span class="va">Y</span><span class="op">$</span><span class="va">ns</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>        <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">column_to_rownames</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"ns"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="estimate-mnl-model">Estimate MNL model<a class="anchor" aria-label="anchor" href="#estimate-mnl-model"></a>
 </h4>
 <p>The MNL function requires the data input to be in matrix format. Further note, the baseline category is always set to the examined LUC origin class, i.e. currently set to Cropland. The other inputs control the amount of after burn-in draws, i.e. <span class="math inline">\(niter-nburn\)</span>, from the <em>Gibbs Sampler</em> and the prior variance of the model coefficients <span class="math inline">\(A0\)</span>. For now they can be kept to their default values.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#Compute MNL model with standard settings</span>
-<span class="va">baseline</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span> <span class="op">==</span> <span class="va">example_LU_from</span><span class="op">)</span>
-
-<span class="co"># Decreased niter = 100 and nburn = 50 for faster computation </span>
-<span class="va">results_MNL</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mnlogit.html">mnlogit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span>, <span class="va">baseline</span>, niter <span class="op">=</span> <span class="fl">100</span>, nburn <span class="op">=</span> <span class="fl">50</span>, A0 <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span>
-<span class="co"># Strongly recommended if you have more time: </span>
-<span class="co"># results_MNL &lt;- mnlogit(as.matrix(X), as.matrix(Y), baseline, niter = 2000, nburn = 1000, A0 = 10^4)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#Compute MNL model with standard settings</span></span>
+<span><span class="va">baseline</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span> <span class="op">==</span> <span class="va">example_LU_from</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Decreased niter = 100 and nburn = 50 for faster computation </span></span>
+<span><span class="va">results_MNL</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mnlogit.html">mnlogit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span>, <span class="va">baseline</span>, niter <span class="op">=</span> <span class="fl">100</span>, nburn <span class="op">=</span> <span class="fl">50</span>, A0 <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co"># Strongly recommended if you have more time: </span></span>
+<span><span class="co"># results_MNL &lt;- mnlogit(as.matrix(X), as.matrix(Y), baseline, niter = 2000, nburn = 1000, A0 = 10^4)</span></span></code></pre></div>
 <p>Stored in <code>results_MNL</code> (apart from inputs X,Y &amp; baseline) are the after burn-in posterior draws for the MNL model coefficients and corresponding marginal effects. And that`s basically it, we now have everything we want out of the Prior module and are able to proceed.</p>
 </div>
 </div>
@@ -157,30 +157,30 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 </h4>
 <p>Set example year, load &amp; prepare target data. Moreover, compute mean of coefficient posterior draws and transform data matrix X and mean coefficient matrix to the correct long format required by function <code><a href="../reference/downscale.html">downscale()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Set example year of downscaling target. e.g. 2010</span>
-<span class="va">example_time</span> <span class="op">&lt;-</span> <span class="fl">2010</span>
-
-<span class="co"># Prepare inputs for downscale function</span>
-<span class="co">## get target data and filter for year and lu.from according to example, i.e. 2010 &amp; cropland</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_FABLE</span><span class="op">)</span>
-
-<span class="va">arg_targets_crop_2010</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">argentina_FABLE</span>, <span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span> <span class="op">&amp;</span>
-                            <span class="va">times</span> <span class="op">==</span> <span class="va">example_time</span><span class="op">)</span>
-
-<span class="co">## pivot explanatory input data into long format</span>
-<span class="va">X_long</span> <span class="op">&lt;-</span>  <span class="va">X</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"ns"</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-            <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">!</span><span class="va">ns</span>, names_to<span class="op">=</span><span class="st">"ks"</span>, values_to <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span>
-
-<span class="co">## prior oefficients: compute mean of posterior draws &amp; pivot to long format  </span>
-<span class="va">pred_coeff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">results_MNL</span><span class="op">$</span><span class="va">postb</span><span class="op">[</span>,<span class="op">-</span><span class="va">baseline</span>,<span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">pred_coeff_long</span> <span class="op">&lt;-</span> <span class="va">pred_coeff</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"ks"</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-                    <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">!</span><span class="va">ks</span>, names_to <span class="op">=</span> <span class="st">"lu.to"</span>, values_to<span class="op">=</span><span class="st">"value"</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-                      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">lu.to</span><span class="op">)</span> <span class="op"><a href="https://tidyr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
-                        <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/add_column.html" class="external-link">add_column</a></span><span class="op">(</span>lu.from<span class="op">=</span><span class="va">example_LU_from</span>, .after<span class="op">=</span><span class="st">"ks"</span><span class="op">)</span>
-
-<span class="co">## starting area should provide information on area of each (higher resolution) grid cell, i.e ns</span>
-<span class="va">arg_start_areas_crop</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">argentina_df</span><span class="op">$</span><span class="va">lu_levels</span>, <span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Set example year of downscaling target. e.g. 2010</span></span>
+<span><span class="va">example_time</span> <span class="op">&lt;-</span> <span class="fl">2010</span></span>
+<span></span>
+<span><span class="co"># Prepare inputs for downscale function</span></span>
+<span><span class="co">## get target data and filter for year and lu.from according to example, i.e. 2010 &amp; cropland</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_FABLE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">arg_targets_crop_2010</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">argentina_FABLE</span>, <span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span> <span class="op">&amp;</span></span>
+<span>                            <span class="va">times</span> <span class="op">==</span> <span class="va">example_time</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## pivot explanatory input data into long format</span></span>
+<span><span class="va">X_long</span> <span class="op">&lt;-</span>  <span class="va">X</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"ns"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>            <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">!</span><span class="va">ns</span>, names_to<span class="op">=</span><span class="st">"ks"</span>, values_to <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## prior oefficients: compute mean of posterior draws &amp; pivot to long format  </span></span>
+<span><span class="va">pred_coeff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">results_MNL</span><span class="op">$</span><span class="va">postb</span><span class="op">[</span>,<span class="op">-</span><span class="va">baseline</span>,<span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pred_coeff_long</span> <span class="op">&lt;-</span> <span class="va">pred_coeff</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"ks"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>                    <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">!</span><span class="va">ks</span>, names_to <span class="op">=</span> <span class="st">"lu.to"</span>, values_to<span class="op">=</span><span class="st">"value"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>                      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">lu.to</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>                        <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/add_column.html" class="external-link">add_column</a></span><span class="op">(</span>lu.from<span class="op">=</span><span class="va">example_LU_from</span>, .after<span class="op">=</span><span class="st">"ks"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## starting area should provide information on area of each (higher resolution) grid cell, i.e ns</span></span>
+<span><span class="va">arg_start_areas_crop</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">argentina_df</span><span class="op">$</span><span class="va">lu_levels</span>, <span class="va">lu.from</span> <span class="op">==</span> <span class="va">example_LU_from</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="downscaling-computation-and-results">Downscaling computation and results<a class="anchor" aria-label="anchor" href="#downscaling-computation-and-results"></a>
@@ -188,10 +188,10 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 <p>The <code><a href="../reference/downscale.html">downscale()</a></code> function either accepts priors directly or computes them within from passed on explanatory and mean coefficient data. Here the latter method is shown. The default downscaling technique applied is <em>Bias Correction</em> (BS).</p>
 <p>Lastly, given the example settings all remaining inputs to the downscale function can be kept at their default value.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">results_DS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/downscale.html">downscale</a></span><span class="op">(</span>targets <span class="op">=</span> <span class="va">arg_targets_crop_2010</span>, 
-                start.areas <span class="op">=</span>  <span class="va">arg_start_areas_crop</span>, xmat <span class="op">=</span> <span class="va">X_long</span>, betas <span class="op">=</span> <span class="va">pred_coeff_long</span><span class="op">)</span>
-
-<span class="va">downscaled_LUC</span> <span class="op">&lt;-</span> <span class="va">results_DS</span><span class="op">$</span><span class="va">out.res</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">results_DS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/downscale.html">downscale</a></span><span class="op">(</span>targets <span class="op">=</span> <span class="va">arg_targets_crop_2010</span>, </span>
+<span>                start.areas <span class="op">=</span>  <span class="va">arg_start_areas_crop</span>, xmat <span class="op">=</span> <span class="va">X_long</span>, betas <span class="op">=</span> <span class="va">pred_coeff_long</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">downscaled_LUC</span> <span class="op">&lt;-</span> <span class="va">results_DS</span><span class="op">$</span><span class="va">out.res</span></span></code></pre></div>
 <p>That’s it! You successfully downscaled LUC from Cropland in Argentina from target <em>FABLE</em> projections for the year 2010. The results are stored in <code>results_DS$out.res</code>.</p>
 </div>
 </div>
@@ -200,19 +200,19 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 <h2 id="visualize-results">Visualize results<a class="anchor" aria-label="anchor" href="#visualize-results"></a>
 </h2>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#load raster data for argentina</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_raster</span><span class="op">)</span>
-
-<span class="co"># call plot function &amp; plot downscaled LUC projections from Cropland for the year 2010</span>
-<span class="va">LUC_argentina_2010_Crop_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/LUC_plot.html">LUC_plot</a></span><span class="op">(</span><span class="va">downscaled_LUC</span>, <span class="va">argentina_raster</span><span class="op">)</span>
-<span class="co">#&gt; Loading required package: raster</span>
-<span class="co">#&gt; Loading required package: sp</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'raster'</span>
-<span class="co">#&gt; The following object is masked from 'package:dplyr':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     select</span>
-<span class="va">LUC_argentina_2010_Crop_plot</span><span class="op">$</span><span class="va">LUC.plot</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#load raster data for argentina</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">argentina_raster</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># call plot function &amp; plot downscaled LUC projections from Cropland for the year 2010</span></span>
+<span><span class="va">LUC_argentina_2010_Crop_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/LUC_plot.html">LUC_plot</a></span><span class="op">(</span><span class="va">downscaled_LUC</span>, <span class="va">argentina_raster</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: raster</span></span>
+<span><span class="co">#&gt; Loading required package: sp</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'raster'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:dplyr':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     select</span></span>
+<span><span class="va">LUC_argentina_2010_Crop_plot</span><span class="op">$</span><span class="va">LUC.plot</span></span></code></pre></div>
 <p><img src="downscalr_tutorial_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -228,7 +228,7 @@ Fig. 1 - Overview of the GLOBIOM DownScale framework
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>
