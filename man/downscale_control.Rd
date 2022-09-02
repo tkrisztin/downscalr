@@ -14,7 +14,8 @@ downscale_control(
   cutoff = 0,
   redo = 2,
   max_diff = 10^-8,
-  err.txt = ""
+  err.txt = "",
+  prior_weights = 0
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ downscale_control(
 \item{max_diff}{If difference to targets is larger, redo the estimation (helps to avoid convergence errors)}
 
 \item{err.txt}{Error text for caller identification (used for debugging)}
+
+\item{prior_weights}{Scalar between 0 and 1; if both betas and priors are specified this value gives the weight of the priors.}
 }
 \value{
 List with default options for bias correction solver

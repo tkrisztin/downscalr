@@ -8,7 +8,7 @@
 #' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
 #' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
 #' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
-#' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
+#' @param priors A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); if \code{betas} were supplied \code{prior_weights} in \code{\link{downscale_control}} regulate how these are weighted.
 #' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
 #' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
 #'
@@ -25,7 +25,33 @@
 #' @import tibble
 #'
 #' @examples
-#' ## A basic example
+#' require(dplyr)
+#' require(tidyr)
+#' require(tibble)
+#' betas = NULL
+#' for (jj in unique(argentina_luc$lu.from)) {
+#'  Y = dplyr::filter(argentina_luc,lu.from == jj & Ts == 2000) %>%
+#'    pivot_wider(names_from = lu.to)
+#'  X = argentina_df$xmat %>% tidyr::pivot_wider(names_from = "ks") %>%
+#'    dplyr::arrange(match(ns,Y$ns))
+#'  Y = Y %>% dplyr::select(-c(lu.from,Ts,ns))
+#'  X = X %>% dplyr::select(-c(ns))
+#'  res1 <- mnlogit(as.matrix(X), as.matrix(Y),baseline = which(colnames(Y) == jj),
+#'           niter = 3,nburn = 2)
+#'  betas = betas %>% dplyr::bind_rows(
+#'   apply(res1$postb, c(1, 2), mean) %>% 
+#'   as.data.frame() %>% tibble::rownames_to_column("ks") %>% 
+#'   pivot_longer(cols = -c(1),names_to = "lu.to") %>% 
+#'   dplyr::mutate(lu.from = jj,.before="lu.to")
+#'  )
+#' }
+#' ns = unique(argentina_df$lu_levels$ns)
+#' priors = data.frame(ns = as.character(ns),lu.from="Cropland",lu.to="Forest",value = runif(length(ns)))
+#' res1 = downscale(targets = argentina_FABLE %>% dplyr::filter(times == "2010"),
+#'          start.areas = argentina_df$lu_levels,
+#'          xmat = argentina_df$xmat,
+#'          betas = betas %>% dplyr::filter(lu.from!="Cropland" | lu.to!="Forest"),
+#'          priors = priors)
 downscale = function(targets,start.areas,xmat,betas,
                      areas.update.fun = areas.sum_to,
                      xmat.coltypes = NULL,
