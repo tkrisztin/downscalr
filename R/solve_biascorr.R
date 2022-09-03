@@ -81,10 +81,14 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         tibble::column_to_rownames(var = "ns")
       curr.priors = curr.priors[match(names(curr.areas),row.names(curr.priors)),,drop = FALSE]
       # check if betas have been provided for priors already
+      mixed_priors =c()
+      nonmixed_priors = colnames(curr.priors)
       if (any(colnames(curr.betas) %in% colnames(curr.priors))) {
-        warning(paste0(err.txt,
-                       "Priors provided for lu.from/lu.to combinations for which betas exist.\n These will be overwritten."))
-        curr.betas = curr.betas[,-which(colnames(curr.betas) %in% colnames(curr.priors)),drop = FALSE]
+        mixed_priors = colnames(curr.betas)[which(colnames(curr.betas) %in% colnames(curr.priors))]
+        nonmixed_priors = nonmixed_priors[!nonmixed_priors %in% mixed_priors]
+        #warning(paste0(err.txt,
+        #               "Priors provided for lu.from/lu.to combinations for which betas exist.\n These will be overwritten."))
+        #curr.betas = curr.betas[,-which(colnames(curr.betas) %in% colnames(curr.priors)),drop = FALSE]
       }
       curr.priors = as.matrix(curr.priors)
     } else {curr.priors = NULL}
@@ -109,9 +113,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       }
     }
     if (!is.null(curr.priors)) {
-      p2 = ncol(curr.priors)
+      #p2 = ncol(curr.priors)
+      p2 = length(nonmixed_priors)
+      p2_mixed = length(mixed_priors)
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
-    } else {p2 = 0}
+    } else {p2 = 0;p2_mixed = 0}
     if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
 
     # check restrictions for consistency
@@ -131,7 +137,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     priors.mu[,colnames(curr.betas)] = exp(priors.mu[,colnames(curr.betas)])
     # match other priors (if they exist)
     if (p2 > 0) {
-      priors.mu[,colnames(curr.priors)] = curr.priors
+      priors.mu[,nonmixed_priors] = curr.priors[,nonmixed_priors]
+    }
+    if (p2_mixed > 0) {
+      w1 = options$prior_weights
+      priors.mu[,mixed_priors] = (1-w1)*priors.mu[,mixed_priors] + w1*curr.priors[,mixed_priors]
     }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
