@@ -1,9 +1,9 @@
 # downscalr
 An R package for downscaling of land-use and land-use change projections. You find the same information (and example [vignettes](https://tkrisztin.github.io/downscalr/articles/downscalr_tutorial.html)) on the [pkgdown](https://pkgdown.r-lib.org/) website [here](https://tkrisztin.github.io/downscalr/).
 
-This package was developed in the context of the SPIPA Argentina project, in joint cooperation with colleagues from the [National Agricultural Technology Institute](https://www.argentina.gob.ar/inta). The main purpose of this was to port IIASA's [DownScale](https://github.com/iiasa/DownScale) model, for easier comparison with INTA's Argentina specific implementation of [Dinamica EGO](https://csr.ufmg.br/dinamica/) for the purpose of downscaling [FABLE Calculator](https://www.abstract-landscapes.com/fable-calculator) output. This enables a more in-depth representation of high-resolution land-use change projections.
+This package allows to downscale land-use and land-use change projections from models such as [GLOBIOM](https://iiasa.ac.at/models-and-data/global-biosphere-management-model), [CAPRI](https://www.suprema-project.eu/project/solution/tools/capri) or [FABLE](https://iiasa.ac.at/projects/food-agriculture-biodiversity-land-and-energy-fable) models.
 
-Originally downscalr was developed to provide high-resolution projections of the [GLOBIOM](https://iiasa.ac.at/web/home/research/GLOBIOM/GLOBIOM.html) model. However, within the course of SPIPA Argentina we have expanded it to be fully compatible with FABLE Calculator output. Moreover, the code was ported to R and documented thoroughly, to enable ease of use by INTA, our Argentinian project partner.
+Development of the package was supported by the European Union - Directorate General Environment, as well as the European Union’s Partnership Instrument and the German Federal Ministry for the Environment, Nature Conservation, and Nuclear Safety (BMU) in the context of the International Climate Initiative (IKI). 
 
 # Installation:
 
@@ -28,6 +28,13 @@ If you have have followed the install instructions with vignette above, you can 
 This should open a tab in your browser, click on "HTML" to access the tutorial. For additional guidance see the DownScale package documentation here: https://bit.ly/3fiLG3u
       
 # Additional information
+
+The package was further developed in the context of the [European Union Biodiversity and Climate strategies Assessment (EU BIOCLIMA)](https://iiasa.ac.at/projects/european-union-biodiversity-and-climate-strategies-assessment-eu-bioclima) project. The main project goal is to review and assess EU policies on land-use with diverse objectives from forestry, food production, climate change mitigation and biodiversity conservation, and then assess their impacts on biodiversity (e.g. species conservation status and ecosystems extent and condition) and on carbon stocks and flows.
+
+This package was created in the context of the SPIPA Argentina project, in joint cooperation with colleagues from the [National Agricultural Technology Institute](https://www.argentina.gob.ar/inta). The main purpose of this was to port IIASA's [DownScale](https://github.com/iiasa/DownScale) model, for easier comparison with INTA's Argentina specific implementation of [Dinamica EGO](https://csr.ufmg.br/dinamica/) for the purpose of downscaling [FABLE Calculator](https://www.abstract-landscapes.com/fable-calculator) output. This enables a more in-depth representation of high-resolution land-use change projections.
+
+Originally downscalr was developed to provide high-resolution projections of the [GLOBIOM](https://iiasa.ac.at/web/home/research/GLOBIOM/GLOBIOM.html) model. However, within the course of SPIPA Argentina we have expanded it to be fully compatible with FABLE Calculator output. Moreover, the code was ported to R and documented thoroughly, to enable ease of use by INTA, our Argentinian project partner.
+
 Supported by:
 
 <p float="left">
