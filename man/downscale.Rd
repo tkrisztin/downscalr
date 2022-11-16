@@ -7,8 +7,8 @@
 downscale(
   targets,
   start.areas,
-  xmat,
-  betas,
+  xmat = NULL,
+  betas = NULL,
   areas.update.fun = areas.sum_to,
   xmat.coltypes = NULL,
   xmat.proj = NULL,
@@ -23,9 +23,13 @@ downscale(
 
 \item{start.areas}{A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
 
-\item{xmat}{A dataframe of explanatory variables with columns ns, ks and value}
+\item{xmat}{A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
+Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
+\code{lu.from} and \code{lu.to} in \code{targets}.}
 
-\item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value}
+\item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value. Defaults to NULL.
+Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
+\code{lu.from} and \code{lu.to} in \code{targets}.}
 
 \item{areas.update.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to}
 

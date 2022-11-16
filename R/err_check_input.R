@@ -1,6 +1,7 @@
 
 PLCHOLD_REGION = "NA_REGION"
 PLCHOLD_LU = "NA_LU"
+PLCHOLD_K = "NA_K"
 PLCHOLD_T = "NA_TIME"
 
 #' Error check inputs
@@ -79,8 +80,8 @@ err_check_inputs = function(targets,areas,xmat,betas,
   }
 
   # check values
-  if (!all(targets >=0)) {
-    targets[targets<0] = 0
+  if (!all(targets$value >=0)) {
+    targets$value[targets$value<0] = 0
     stop(paste0(err.txt,"Negative targets!"))
   }
   if (!all(areas$value >= 0)) {stop(paste0(err.txt,"All areas must be larger or equal to zero."))}

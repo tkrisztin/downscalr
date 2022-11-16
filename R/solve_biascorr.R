@@ -1,8 +1,9 @@
 #' Bias correction solver for multinomial logit type problems
 #'
 #' @param targets A dataframe with columns lu.from, lu.to and value (all targets >= 0)
-#' @param areas A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
-#' @param xmat A dataframe of explanatory variables with columns ks and value
+#' @param areas A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 
+#'   and with sum(areas) >= sum(targets)
+#' @param xmat A dataframe of explanatory variables with columns ks and value.
 #' @param betas A dataframe of coefficients with columns ks, lu.from, lu.to & value
 #' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from, lu.to (with priors >= 0)
 #' @param restrictions A dataframe with columns ns, lu.from, lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero

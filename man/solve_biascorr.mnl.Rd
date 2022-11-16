@@ -17,9 +17,10 @@ solve_biascorr.mnl(
 \arguments{
 \item{targets}{A dataframe with columns lu.from, lu.to and value (all targets >= 0)}
 
-\item{areas}{A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
+\item{areas}{A dataframe of areas with columns lu.from, ns and value, with all areas >= 0
+and with sum(areas) >= sum(targets)}
 
-\item{xmat}{A dataframe of explanatory variables with columns ks and value}
+\item{xmat}{A dataframe of explanatory variables with columns ks and value.}
 
 \item{betas}{A dataframe of coefficients with columns ks, lu.from, lu.to & value}
 

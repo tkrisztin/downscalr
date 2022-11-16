@@ -23,7 +23,7 @@ complete_targets = function(targets) {
     dplyr::right_join(targets %>%
                         tidyr::expand(nesting(lu.from,lu.to),.data$times),
                       by = c("times", "lu.from", "lu.to")) %>%
-    filter(.data$lu.from != .data$lu.to) %>%
+    filter(as.character(.data$lu.from) != as.character(.data$lu.to)) %>%
     tidyr::replace_na(list(value = 0))
   targets = dplyr::arrange(targets,.data$lu.from,.data$lu.to,.data$times)
   return(targets)
@@ -107,7 +107,7 @@ complete_priors = function(priors,xmat) {
   #   (.data$ does not work in nested function)
   lu.from = lu.to = ns =  NULL
   priors = priors %>%  dplyr::right_join(
-    priors %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
+    priors %>% right_join(dplyr::select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
     tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
                             .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))

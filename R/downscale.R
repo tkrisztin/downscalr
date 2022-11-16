@@ -2,8 +2,12 @@
 #'
 #' @param targets A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)
 #' @param start.areas  A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
-#' @param xmat A dataframe of explanatory variables with columns ns, ks and value
-#' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
+#' @param xmat A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL. 
+#' Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of 
+#' \code{lu.from} and \code{lu.to} in \code{targets}.
+#' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value. Defaults to NULL. 
+#' Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of 
+#' \code{lu.from} and \code{lu.to} in \code{targets}.
 #' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to
 #' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
 #' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
@@ -52,7 +56,7 @@
 #'          xmat = argentina_df$xmat,
 #'          betas = betas %>% dplyr::filter(lu.from!="Cropland" | lu.to!="Forest"),
 #'          priors = priors)
-downscale = function(targets,start.areas,xmat,betas,
+downscale = function(targets,start.areas,xmat = NULL,betas = NULL,
                      areas.update.fun = areas.sum_to,
                      xmat.coltypes = NULL,
                      xmat.proj = NULL,xmat.dyn.fun = xmat.sum_to,
@@ -63,7 +67,18 @@ downscale = function(targets,start.areas,xmat,betas,
   err.txt = options$err.txt
   targets = complete_targets(targets)
   start.areas = complete_areas(start.areas)
+  if (is.null(xmat)) {
+    xmat = data.frame(ns = unique(start.areas$ns),
+                      ks = PLCHOLD_K,
+                       value = 0)
+  }
   xmat = complete_xmat(xmat)
+  if (is.null(betas)) {
+    betas = data.frame(lu.from = paste0(PLCHOLD_LU,1),
+                       lu.to = paste0(PLCHOLD_LU,2),
+                       ks = unique(xmat$ks),
+                       value = 0)
+  }
   betas = complete_betas(betas)
   complete_xmat.coltypes = complete_xmat.coltypes(xmat.coltypes,xmat)
   if (!is.null(priors)) {priors = complete_priors(priors,xmat)}
@@ -95,7 +110,7 @@ downscale = function(targets,start.areas,xmat,betas,
   out.solver <- list()
   for (curr.time in times) {
     # Extract targets
-    curr.targets = filter(targets,times == curr.time) %>% select(-times)
+    curr.targets = filter(targets,times == curr.time) %>% dplyr::select(-times)
 
     if (options$solve_fun == "solve_biascorr") {
       curr.options = options
@@ -143,8 +158,10 @@ downscale = function(targets,start.areas,xmat,betas,
     }
   }
 
-  # Add back default columns
-  # TODO
-
+  # Remove default values columns
+  if (any(out.res$times == PLCHOLD_T)) {out.res = out.res %>% dplyr::select(-times)}
+  if (any(out.res$lu.from == PLCHOLD_LU)) {out.res = out.res %>% dplyr::select(-lu.from)}
+  if (any(out.res$lu.to == PLCHOLD_LU)) {out.res = out.res %>% dplyr::filter(lu.to != PLCHOLD_LU)}
+  
   return(list(out.res = out.res,out.solver = out.solver))
 }
