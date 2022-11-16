@@ -57,8 +57,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">downscale</span><span class="op">(</span></span>
 <span>  <span class="va">targets</span>,</span>
 <span>  <span class="va">start.areas</span>,</span>
-<span>  <span class="va">xmat</span>,</span>
-<span>  <span class="va">betas</span>,</span>
+<span>  xmat <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  betas <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  areas.update.fun <span class="op">=</span> <span class="va">areas.sum_to</span>,</span>
 <span>  xmat.coltypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xmat.proj <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -80,11 +80,15 @@
 
 
 <dt>xmat</dt>
-<dd><p>A dataframe of explanatory variables with columns ns, ks and value</p></dd>
+<dd><p>A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
+Either <code>xmat</code> and <code>betas</code> or <code>priors</code> have to be provided for each combination of
+<code>lu.from</code> and <code>lu.to</code> in <code>targets</code>.</p></dd>
 
 
 <dt>betas</dt>
-<dd><p>A dataframe of coefficients with columns ks, lu.from (optional), lu.to &amp; value</p></dd>
+<dd><p>A dataframe of coefficients with columns ks, lu.from (optional), lu.to &amp; value. Defaults to NULL.
+Either <code>xmat</code> and <code>betas</code> or <code>priors</code> have to be provided for each combination of
+<code>lu.from</code> and <code>lu.to</code> in <code>targets</code>.</p></dd>
 
 
 <dt>areas.update.fun</dt>
