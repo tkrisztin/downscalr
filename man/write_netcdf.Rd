@@ -8,13 +8,7 @@ write_netcdf(
   res,
   rasterfile,
   filename = "nc_v1.nc",
-  raster.crs = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0",
-  times = NULL,
-  ns = NULL,
-  lu.to = NULL,
-  value = NULL,
-  label = NULL,
-  . = NULL
+  raster.crs = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 )
 }
 \arguments{
@@ -35,27 +29,27 @@ write_netcdf(
 Function to write results from downscalr into NetCDF file format
 }
 \examples{
-## A basic example to plot the observed LU changes 
-
 require(dplyr)
 require(tidyr)
 require(tibble)
 require(ncdf4)
 require(raster)
 
-areas <- data.frame(ns=getValues(argentina_raster), 
+## A basic example to plot the observed LU changes
+
+areas <- data.frame(ns=getValues(argentina_raster),
                     area=getValues(area(argentina_raster))) \%>\%
-         na.omit() \%>\% 
-         group_by(ns) \%>\% 
+         na.omit() \%>\%
+         group_by(ns) \%>\%
          summarise(area=sum(area)) \%>\%
          mutate(ns=as.character(ns))
- 
-to.plot <- argentina_luc \%>\% 
-           rename("times"="Ts") \%>\% 
-           left_join(areas) \%>\% 
-           mutate(value=value*area) \%>\% 
+
+to.plot <- argentina_luc \%>\%
+           rename("times"="Ts") \%>\%
+           left_join(areas) \%>\%
+           mutate(value=value*area) \%>\%
            dplyr::select(-area)
- 
-write_netcdf(to.plot ,argentina_raster, filename="H:/argentina.nc")
+
+\dontrun{write_netcdf(to.plot ,argentina_raster, filename="argentina.nc")}
 
 }

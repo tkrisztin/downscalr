@@ -29,7 +29,6 @@ Imports:
     nloptr,
     raster,
     sp,
-    stats,
     tibble,
     tidyr
 Suggests: 

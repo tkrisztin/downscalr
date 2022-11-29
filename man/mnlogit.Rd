@@ -4,7 +4,15 @@
 \alias{mnlogit}
 \title{Bayesian logit model with Pólya Gamma prior with MCMC}
 \usage{
-mnlogit(X, Y, baseline = ncol(Y), niter = 1000, nburn = 500, A0 = 10^4)
+mnlogit(
+  X,
+  Y,
+  baseline = ncol(Y),
+  niter = 1000,
+  nburn = 500,
+  A0 = 10^4,
+  calc_marginal_fx = FALSE
+)
 }
 \arguments{
 \item{X}{An n by k matrix of explanatory variables}
@@ -13,11 +21,13 @@ mnlogit(X, Y, baseline = ncol(Y), niter = 1000, nburn = 500, A0 = 10^4)
 
 \item{baseline}{Baseline class for estimation. Parameters will be set to zero. Defaults to the p-th column.}
 
-\item{niter}{Total number of MCMC draws}
+\item{niter}{Total number of MCMC draws. Defaults to 1000.}
 
-\item{nburn}{Burn-in draws for MCMC}
+\item{nburn}{Burn-in draws for MCMC. Note: \code{nburn} has to be lower than \code{niter}. Defaults to 500.}
 
 \item{A0}{Prior variance scalar for all slope coefficients}
+
+\item{calc_marginal_fx}{Should marginal effects be calculated? Defaults to \code{FALSE}.}
 }
 \value{
 A list containing
@@ -57,5 +67,7 @@ res1 <- mnlogit(as.matrix(X), as.matrix(Y),baseline = which(colnames(Y) == "Crop
 print(apply(res1$postb, c(1, 2), mean))
 }
 \references{
-Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for logistic models using Polya-Gamma latent variables. Journal of the American statistical Association 108.504 (2013): 1339-1349.
+Nicholas G. Polson, James G. Scott, and Jesse Windle. Bayesian inference for
+logistic models using Polya-Gamma latent variables.
+Journal of the American statistical Association 108.504 (2013): 1339-1349.
 }

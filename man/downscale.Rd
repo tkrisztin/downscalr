@@ -73,14 +73,15 @@ for (jj in unique(argentina_luc$lu.from)) {
  res1 <- mnlogit(as.matrix(X), as.matrix(Y),baseline = which(colnames(Y) == jj),
           niter = 3,nburn = 2)
  betas = betas \%>\% dplyr::bind_rows(
-  apply(res1$postb, c(1, 2), mean) \%>\% 
-  as.data.frame() \%>\% tibble::rownames_to_column("ks") \%>\% 
-  pivot_longer(cols = -c(1),names_to = "lu.to") \%>\% 
+  apply(res1$postb, c(1, 2), mean) \%>\%
+  as.data.frame() \%>\% tibble::rownames_to_column("ks") \%>\%
+  pivot_longer(cols = -c(1),names_to = "lu.to") \%>\%
   dplyr::mutate(lu.from = jj,.before="lu.to")
  )
 }
 ns = unique(argentina_df$lu_levels$ns)
-priors = data.frame(ns = as.character(ns),lu.from="Cropland",lu.to="Forest",value = runif(length(ns)))
+priors = data.frame(ns = as.character(ns),lu.from="Cropland",
+            lu.to="Forest",value = runif(length(ns)))
 res1 = downscale(targets = argentina_FABLE \%>\% dplyr::filter(times == "2010"),
          start.areas = argentina_df$lu_levels,
          xmat = argentina_df$xmat,
