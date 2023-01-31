@@ -1,6 +1,11 @@
-#' Get default options for bias corrections solver
+#' Set options for downscaling
 #'
-#' @param solve_fun Downscaling algorithm (should be \code{\link{solve_biascorr.mnl}})).
+#' This function can be called to specify additional options to the downscalR solver.
+#' The user can change the solver function, specify solver behavior, stopping conditions, and
+#' change how exogeneous and econometric prior specifications are mixed.
+#'
+#' @param solve_fun The name of the downscaling function to use. Has to be a
+#' valid R function. Defaults to \code{"solve_biascorr"}.
 #' @param algorithm Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).
 #' @param xtol_rel Relative tolerance of solver.
 #' @param xtol_abs Absolute solver tolerance.
@@ -14,7 +19,12 @@
 #'
 #' @return List with default options for bias correction solver
 #'
-#' @details Call this function if you want to change default options for the bias corrections solver.
+#' @details
+#' A user specified solve_fun function has to be able to process the following input parameters:
+#' \code{targets}, \code{areas}, \code{xmat}, \code{betas}, \code{priors}, \code{restrictions}, and
+#' \code{options} (the output of this function). The output should be a list containing two parameters:
+#' a dataframe \code{out.res} containing the downscaled output and a list \code{out.solver} detailing
+#' the solver results.
 #'
 #' @export downscale_control
 #'

@@ -1,7 +1,7 @@
 #' Bias correction solver for multinomial logit type problems
 #'
 #' @param targets A dataframe with columns lu.from, lu.to and value (all targets >= 0)
-#' @param areas A dataframe of areas with columns lu.from, ns and value, with all areas >= 0 
+#' @param areas A dataframe of areas with columns lu.from, ns and value, with all areas >= 0
 #'   and with sum(areas) >= sum(targets)
 #' @param xmat A dataframe of explanatory variables with columns ks and value.
 #' @param betas A dataframe of coefficients with columns ks, lu.from, lu.to & value
@@ -142,7 +142,17 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     }
     if (p2_mixed > 0) {
       w1 = options$prior_weights
-      priors.mu[,mixed_priors] = (1-w1)*priors.mu[,mixed_priors] + w1*curr.priors[,mixed_priors]
+      #re-scale exogeneous prior to priors.mu
+      eco.priors_min = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),min)
+      eco.priors_max = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),max)
+      exo.priors = curr.priors[,mixed_priors,drop = FALSE]
+      exo.priors_min = apply(exo.priors, 2, min)
+      exo.priors_max = apply(exo.priors, 2, max)
+      exo.priors = t(
+        t(exo.priors - exo.priors_min) / (exo.priors_max - exo.priors_min) *
+          (eco.priors_max - eco.priors_min) + eco.priors_min
+      )
+      priors.mu[,mixed_priors] = (1-w1)*priors.mu[,mixed_priors] + w1*exo.priors
     }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
