@@ -2,7 +2,7 @@
 % Please edit documentation in R/downscale_control.R
 \name{downscale_control}
 \alias{downscale_control}
-\title{Get default options for bias corrections solver}
+\title{Set options for downscaling}
 \usage{
 downscale_control(
   solve_fun = "solve_biascorr",
@@ -14,12 +14,12 @@ downscale_control(
   cutoff = 0,
   redo = 2,
   max_diff = 10^-8,
-  err.txt = "",
-  prior_weights = 0
+  err.txt = ""
 )
 }
 \arguments{
-\item{solve_fun}{Downscaling algorithm (should be \code{\link{solve_biascorr.mnl}})).}
+\item{solve_fun}{The name of the downscaling function to use. Has to be a
+valid R function. Defaults to \code{"solve_biascorr"}.}
 
 \item{algorithm}{Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).}
 
@@ -38,17 +38,20 @@ downscale_control(
 \item{max_diff}{If difference to targets is larger, redo the estimation (helps to avoid convergence errors)}
 
 \item{err.txt}{Error text for caller identification (used for debugging)}
-
-\item{prior_weights}{Scalar between 0 and 1; if both betas and priors are specified this value gives the weight of the priors.}
 }
 \value{
 List with default options for bias correction solver
 }
 \description{
-Get default options for bias corrections solver
+This function can be called to specify additional options to the downscalR solver.
+The user can change the solver function, specify solver behavior, and stopping conditions.
 }
 \details{
-Call this function if you want to change default options for the bias corrections solver.
+A user specified solve_fun function has to be able to process the following input parameters:
+\code{targets}, \code{areas}, \code{xmat}, \code{betas}, \code{priors}, \code{restrictions}, and
+\code{options} (the output of this function). The output should be a list containing two parameters:
+a dataframe \code{out.res} containing the downscaled output and a list \code{out.solver} detailing
+the solver results.
 }
 \examples{
 opts1 = downscale_control()

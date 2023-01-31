@@ -80,7 +80,12 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       curr.priors = dplyr::filter(priors,lu.from == curr.lu.from & lu.to %in% curr.lu.to) %>%
         tidyr::pivot_wider(names_from = lu.to,values_from = "value",id_cols = "ns") %>%
         tibble::column_to_rownames(var = "ns")
-      curr.priors = curr.priors[match(names(curr.areas),row.names(curr.priors)),,drop = FALSE]
+      curr.prior_weights = dplyr::filter(priors,lu.from == curr.lu.from & lu.to %in% curr.lu.to) %>%
+        tidyr::pivot_wider(names_from = lu.to,values_from = "weight",id_cols = "ns") %>%
+        tibble::column_to_rownames(var = "ns")
+      name_match = match(names(curr.areas),row.names(curr.priors))
+      curr.priors = curr.priors[name_match,,drop = FALSE]
+      curr.prior_weights = curr.prior_weights[name_match,,drop = FALSE]
       # check if betas have been provided for priors already
       mixed_priors =c()
       nonmixed_priors = colnames(curr.priors)
@@ -141,7 +146,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       priors.mu[,nonmixed_priors] = curr.priors[,nonmixed_priors]
     }
     if (p2_mixed > 0) {
-      w1 = options$prior_weights
+      w1 = curr.prior_weights[,mixed_priors,drop = FALSE]
       #re-scale exogeneous prior to priors.mu
       eco.priors_min = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),min)
       eco.priors_max = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),max)

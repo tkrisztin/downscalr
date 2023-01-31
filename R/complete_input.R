@@ -93,7 +93,7 @@ complete_betas = function(betas) {
 #' @param xmat Dataframe of xmat, must have columns ns, ks and value
 #' @param xmat Dataframe of targets, must have columns lu.from and times
 #'
-#' @return Completed dataframe with lu.from and all combinations
+#' @return Completed dataframe with times, lu.from, lu.to, weight and all combinations
 #'
 #' Internal function. Adds missing columns and completes potential sparse dataframes.
 #' @keywords internal
@@ -106,6 +106,13 @@ complete_priors = function(priors,xmat,targets) {
     priors = cbind(lu.from = PLCHOLD_LU,priors)
   }  else {
     if (any(priors$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
+  }
+  if (tibble::has_name(priors,"weight")) {
+    if (any(priors$weight < 0) || any(priors$weight >1 )) {
+      stop("All prior weights must be between 0 and 1.")
+    }
+  } else {
+    priors = cbind(priors,weight = 1)
   }
   if (!tibble::has_name(priors,"times")) {
     priors = priors %>%

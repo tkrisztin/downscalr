@@ -39,7 +39,10 @@ Either \code{xmat} and \code{betas} or \code{priors} have to be provided for eac
 
 \item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
 
-\item{priors}{A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); if \code{betas} were supplied \code{prior_weights} in \code{\link{downscale_control}} regulate how these are weighted.}
+\item{priors}{A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); An optional
+column \code{weight} can be supplied. This has to be fully numeric with all values between
+0 and 1. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous
+priors in the downscaling.}
 
 \item{restrictions}{A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
 
@@ -50,6 +53,7 @@ A list containing
 \itemize{
 \item \code{out.res} Dataframe with columns times, ns, lu.from, lu.to & value (area allocation)
 \item \code{out.solver} A list of the solver output
+\item \code{ds.inputs} A list documenting all the downscale function inputs
 }
 }
 \description{

@@ -4,15 +4,15 @@
 \alias{complete_priors}
 \title{Complete input priors}
 \usage{
-complete_priors(priors, xmat)
+complete_priors(priors, xmat, targets)
 }
 \arguments{
 \item{priors}{Dataframe of priors, must have columns ns, lu.to and value}
 
-\item{xmat}{Dataframe of xmat, must have columns ns, ks and value}
+\item{xmat}{Dataframe of targets, must have columns lu.from and times}
 }
 \value{
-Completed dataframe with lu.from and all combinations
+Completed dataframe with times, lu.from, lu.to, weight and all combinations
 
 Internal function. Adds missing columns and completes potential sparse dataframes.
 }
