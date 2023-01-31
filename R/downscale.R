@@ -13,6 +13,10 @@
 #' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
 #' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
 #' @param priors A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); if \code{betas} were supplied \code{prior_weights} in \code{\link{downscale_control}} regulate how these are weighted.
+#' @param priors A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); An optional
+#' column \code{weight} can be supplied. This has to be fully numeric with all values between
+#' 0 and 1. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous
+#' priors in the downscaling.
 #' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
 #' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
 #'
