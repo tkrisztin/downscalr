@@ -139,11 +139,9 @@ Lastly, given the example settings all remaining inputs to the downscale functio
 ```{r message=FALSE}
 results_DS <- downscale(targets = arg_targets_crop_2010, 
                 start.areas =  arg_start_areas_crop, xmat = X_long, betas = pred_coeff_long)
-
-downscaled_LUC <- results_DS$out.res
 ```
 
-That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS$out.res`.
+That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS`.
 
 ## Visualize results
 ```{r eval=FALSE,include=FALSE}
@@ -175,7 +173,7 @@ library(raster)
 data(argentina_raster)
 
 # call plot function & plot downscaled LUC projections from Cropland for the year 2010
-LUC_argentina_2010_Crop_plot <- LUC_plot(downscaled_LUC, argentina_raster)
+LUC_argentina_2010_Crop_plot <- LUC_plot(results_DS, argentina_raster)
 LUC_argentina_2010_Crop_plot$LUC.plot
 ```
 
