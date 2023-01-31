@@ -25,6 +25,7 @@
 #' @return A list containing
 #' * \code{out.res} Dataframe with columns times, ns, lu.from, lu.to & value (area allocation)
 #' * \code{out.solver} A list of the solver output
+#' * \code{ds.inputs} A list documenting all the downscale function inputs
 #'
 #' @export downscale
 #' @import nloptr
@@ -217,5 +218,22 @@ downscale = function(targets,
     out.res = out.res %>% dplyr::filter(lu.to != PLCHOLD_LU)
   }
 
-  return(list(out.res = out.res, out.solver = out.solver))
+  ret <- list(out.res = out.res,
+              out.solver = out.solver,
+              ds.inputs = list(
+                targets = targets,
+                start.areas = start.areas,
+                xmat = xmat,
+                betas = betas,
+                areas.update.fun = areas.update.fun,
+                xmat.coltypes = xmat.coltypes,
+                xmat.proj = xmat.proj,
+                xmat.dyn.fun = xmat.dyn.fun,
+                priors = priors,
+                restrictions = restrictions,
+                options = options))
+
+  class(ret) = "downscalr"
+
+  return(ret)
 }
