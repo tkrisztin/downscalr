@@ -90,7 +90,7 @@ downscale = function(targets,
   betas = complete_betas(betas)
   complete_xmat.coltypes = complete_xmat.coltypes(xmat.coltypes, xmat)
   if (!is.null(priors)) {
-    priors = complete_priors(priors, xmat)
+    priors = complete_priors(priors, xmat, targets)
   }
   if (!is.null(restrictions)) {
     restrictions = complete_restrictions(restrictions, xmat)
@@ -111,17 +111,17 @@ downscale = function(targets,
     restrictions,
     err.txt
   )
-  
+
   # check if all lu in start.area in targets
   if (!all(unique(start.areas$lu.from) %in% unique(targets$lu.from))) {
     # if not save them to a table and add them back manually
     missing_luc = unique(start.areas$lu.from)[!unique(start.areas$lu.from) %in% unique(targets$lu.from)]
-    missing_luc = dplyr::filter(start.areas, lu.from %in% missing_luc) %>% 
+    missing_luc = dplyr::filter(start.areas, lu.from %in% missing_luc) %>%
       mutate(lu.to = lu.from)
   } else {
     missing_luc = NULL
   }
-  
+
   # save column types of xmat
   if (any(xmat.coltypes$value == "projected")) {
     proj.colnames = filter(xmat.coltypes, .data$value == "projected")$ks
@@ -129,19 +129,23 @@ downscale = function(targets,
   if (any(xmat.coltypes$value == "dynamic")) {
     dyn.colnames = filter(xmat.coltypes, .data$value == "dynamic")$ks
   }
-  
+
   # Set starting values
   curr.areas = start.areas
   curr.xmat = xmat
-  curr.priors = priors
   curr.restrictions = restrictions
-  
+
   times = unique(targets$times)
   out.solver <- list()
   for (curr.time in times) {
     # Extract targets
     curr.targets = filter(targets, times == curr.time) %>% dplyr::select(-times)
-    
+
+    # Extract priors
+    if (any(priors$times == curr.time)) {
+      curr.priors = filter(priors, times == curr.time) %>% dplyr::select(-times)
+    } else {curr.priors = NULL}
+
     if (options$solve_fun == "solve_biascorr") {
       curr.options = options
       curr.options$err.txt = paste0(curr.time, " ", curr.options$err.txt)
@@ -156,15 +160,15 @@ downscale = function(targets,
       )
       out.solver[[as.character(curr.time)]] = res$out.solver
     }
-    
+
     # add not covered land-uses (because no targets exist)
     if (!is.null(missing_luc)) {
       res$out.res = res$out.res %>% bind_rows(missing_luc)
     }
-    
+
     # update curr.area
     curr.areas = areas.update.fun(res, curr.areas, priors, xmat.proj)
-    
+
     # update projected xmats
     if (any(xmat.coltypes$value == "projected")) {
       xmat = xmat %>%
@@ -197,7 +201,7 @@ downscale = function(targets,
       out.res = bind_rows(out.res, res.agg)
     }
   }
-  
+
   # Remove default values columns
   if (any(out.res$times == PLCHOLD_T)) {
     out.res = out.res %>% dplyr::select(-times)
@@ -208,6 +212,6 @@ downscale = function(targets,
   if (any(out.res$lu.to == PLCHOLD_LU)) {
     out.res = out.res %>% dplyr::filter(lu.to != PLCHOLD_LU)
   }
-  
+
   return(list(out.res = out.res, out.solver = out.solver))
 }

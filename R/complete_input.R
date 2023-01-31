@@ -91,21 +91,29 @@ complete_betas = function(betas) {
 #'
 #' @param priors Dataframe of priors, must have columns ns, lu.to and value
 #' @param xmat Dataframe of xmat, must have columns ns, ks and value
+#' @param xmat Dataframe of targets, must have columns lu.from and times
 #'
 #' @return Completed dataframe with lu.from and all combinations
 #'
 #' Internal function. Adds missing columns and completes potential sparse dataframes.
 #' @keywords internal
-complete_priors = function(priors,xmat) {
+complete_priors = function(priors,xmat,targets) {
+  # lu.from & lu.to defined to fool the package checker with dplyr namebindings
+  #   (.data$ does not work in nested function)
+  lu.from = lu.to = ns =  NULL
+
   if (!tibble::has_name(priors,"lu.from")) {
     priors = cbind(lu.from = PLCHOLD_LU,priors)
   }  else {
     if (any(priors$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
+  if (!tibble::has_name(priors,"times")) {
+    priors = priors %>%
+      right_join(priors %>%
+                   expand(times = unique(targets$times),lu.from,lu.to,ns),
+                 by= c("ns","lu.from","lu.to"))
+  }
   #Add all combinations
-  # lu.from & lu.to defined to fool the package checker with dplyr namebindings
-  #   (.data$ does not work in nested function)
-  lu.from = lu.to = ns =  NULL
   priors = priors %>%  dplyr::right_join(
     priors %>% right_join(dplyr::select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
     tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),

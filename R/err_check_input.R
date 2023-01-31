@@ -157,5 +157,3 @@ err_check_inputs = function(targets,areas,xmat,betas,
   }
 }
 
-# merge output to G4M grid
-
