@@ -157,7 +157,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         t(exo.priors - exo.priors_min) / (exo.priors_max - exo.priors_min) *
           (eco.priors_max - eco.priors_min) + eco.priors_min
       )
-      priors.mu[,mixed_priors] = (1-w1)*priors.mu[,mixed_priors] + w1*exo.priors
+      priors.mu[,mixed_priors] = as.matrix((1-w1)*priors.mu[,mixed_priors] + w1*exo.priors)
     }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
