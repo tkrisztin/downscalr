@@ -2,9 +2,11 @@
 
 S3method(print,downscalr)
 export(LUC_plot)
+export(LU_to_LUC)
 export(areas.sum_to)
 export(downscale)
 export(downscale_control)
+export(fienberg)
 export(mnlogit)
 export(solve_biascorr.mnl)
 export(write_netcdf)
