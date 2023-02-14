@@ -172,6 +172,7 @@ library(raster)
 #load raster data for argentina
 data(argentina_raster)
 
+#write_netcdf(data=results_DS$out.res, rasterfile=argentina_raster)
 # call plot function & plot downscaled LUC projections from Cropland for the year 2010
 LUC_argentina_2010_Crop_plot <- LUC_plot(results_DS, argentina_raster)
 LUC_argentina_2010_Crop_plot$LUC.plot
