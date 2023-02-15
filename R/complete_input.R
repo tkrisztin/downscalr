@@ -122,9 +122,9 @@ complete_priors = function(priors,xmat,targets) {
   }
   #Add all combinations
   priors = priors %>%  dplyr::right_join(
-    priors %>% right_join(dplyr::select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
+    priors %>% right_join(dplyr::select(xmat,ns) %>% distinct(),by= c("ns")) %>%
     tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
-                            .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
+                            by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   priors = dplyr::arrange(priors,.data$lu.from,.data$lu.to,.data$ns)
   return(priors)

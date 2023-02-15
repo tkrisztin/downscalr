@@ -39,7 +39,7 @@ Either \code{xmat} and \code{betas} or \code{priors} have to be provided for eac
 
 \item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
 
-\item{priors}{A dataframe of priors with columns ns, lu.from (optional), lu.to (with priors >= 0); An optional
+\item{priors}{A dataframe of priors with columns times (optional), ns, lu.from (optional), lu.to (with priors >= 0); An optional
 column \code{weight} can be supplied. This has to be fully numeric with all values between
 0 and 1. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous
 priors in the downscaling.}
