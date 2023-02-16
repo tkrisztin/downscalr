@@ -50,9 +50,9 @@ LU_to_LUC = function(targets.from, targets.to, restrictions = NULL,
 
   n = length(lu_classes)
   matA = diag(n) + 10^-8; matA = matA / rowSums(matA)
-  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = join_by(lu)) %>%
+  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = c("lu")) %>%
     replace_na(list(value = 0))
-  targets.from = data.frame(lu = lu_classes) %>% left_join(targets.from,by = join_by(lu)) %>%
+  targets.from = data.frame(lu = lu_classes) %>% left_join(targets.from,by = c("lu")) %>%
     replace_na(list(value = 0))
 
   res = fienberg(start_mat=matA,target_from=targets.from$value,target_to=targets.to$value)
