@@ -47,4 +47,4 @@ print.downscalr = function(x, ...){
 }
 
 
-# to add is a level map in the summary object and print aggregates in print output 123
+# to add is a level map in the summary object and print aggregates in print output
