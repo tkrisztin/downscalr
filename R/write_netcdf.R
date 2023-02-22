@@ -35,7 +35,7 @@
 #' @import dplyr
 #'
 #'
-#' @examples
+# @examples
 #'
 # start.year=2020
 # label <- "label"
@@ -44,7 +44,7 @@
 #
 write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="This is long name", name="this_is_standard_name", units="unit_of_measurement", dimname="dim_name", dimn=3, varn=NULL, timen=NULL, datadim=1, expandValue=0, data=NULL, vardescr=NULL, create.dimvar=TRUE), start.time=NULL, end.time=NULL, by.time=10, filename = NULL, filepath=NULL){
 
-
+  times <- ns <- lu.to <- value <- var1 <-  NULL
 
   #input check
   if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
