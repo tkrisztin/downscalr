@@ -61,6 +61,7 @@
 #'          xmat = argentina_df$xmat,
 #'          betas = betas %>% dplyr::filter(lu.from!="Cropland" | lu.to!="Forest"),
 #'          priors = priors)
+#'
 downscale = function(targets,
                      start.areas,
                      xmat = NULL,
@@ -190,7 +191,7 @@ downscale = function(targets,
       tmp.proj = xmat.dyn.fun(res, curr.areas, priors, xmat, xmat.proj)
       xmat = xmat %>%
         left_join(
-          tmp.proj %>% rename("dyn" = "value") %>%
+          tmp.proj %>% rename("dyn" = "value") %>%  mutate(ns = as.character(.data$ns)) %>%
             filter(ks %in% xmat.coltypes$ks[xmat.coltypes$value == "dynamic"]),
           by = c("ks", "ns")
         )

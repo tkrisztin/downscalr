@@ -91,4 +91,5 @@ res1 = downscale(targets = argentina_FABLE \%>\% dplyr::filter(times == "2010"),
          xmat = argentina_df$xmat,
          betas = betas \%>\% dplyr::filter(lu.from!="Cropland" | lu.to!="Forest"),
          priors = priors)
+
 }

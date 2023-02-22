@@ -65,7 +65,9 @@ complete_xmat = function(xmat) {
     dplyr::right_join(xmat %>%
                         tidyr::expand(.data$ns,.data$ks),
                       by = c("ns", "ks")) %>%
-    tidyr::replace_na(list(value = 0))
+    tidyr::replace_na(list(value = 0)) %>%
+    dplyr::mutate(ns = as.character(.data$ns), ks = as.character(.data$ks))
+
   return(xmat)
 }
 
