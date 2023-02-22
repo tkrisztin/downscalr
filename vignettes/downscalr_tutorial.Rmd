@@ -139,8 +139,10 @@ Lastly, given the example settings all remaining inputs to the downscale functio
 ```{r message=FALSE}
 results_DS <- downscale(targets = arg_targets_crop_2010, 
                 start.areas =  arg_start_areas_crop, xmat = X_long, betas = pred_coeff_long)
-#### print summary of downscalr
+####summary and print of downscalr output object
+summary(results_DS)
 print(results_DS)
+
 ```
 
 That's it! You successfully downscaled LUC from Cropland in Argentina from target *FABLE* projections for the year 2010. The results are stored in `results_DS`.
