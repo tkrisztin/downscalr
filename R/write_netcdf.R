@@ -74,7 +74,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
   p4s = as.character(terra::crs(rasterfile))
   na_sum = function(x) {return(sum(x[!is.na(x)]))}
-  geosims <- terra::rast(rasterfile)
+  geosims <- terra::rast(rasterfile, proj=TRUE)
   #sp::proj4string(geosims) <- p4s
   geosims <- terra::project(geosims,p4s)
   save_geovals <- data.frame(terra::values(geosims))
