@@ -1,17 +1,17 @@
 #' Function to write results from downscalr or other sources into netCDF file format
+#' 
 #'
-#'
-#' @param data If not provided in \code{variables}, either a dataframe or matrix object with columns ns, times (optional), lu.to and value; defaults to NULL
-#' @param rasterfile RasterLayer object with ns as values
+#' @param data If not provided in \code{variables}, either a dataframe or matrix object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value; defaults to NULL
+#' @param rasterfile Raster object with ns as cell values
 #' @param filename Name of the output netCDF. Defaults to "Downscale_netCDF.nc"
-#' @param variables A list containing:
-#' * \code{data} = a data frame object with columns ns, times (optional), lu.to and value. Overridden if argument \code{data} is provided, defaults to NULL
+#' @param variables A list of lists for each variable to be written or if \code{data} is provided a list of netCDF attribute settings as follows:
+#' * \code{data} = a data frame object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value. Overridden if argument \code{data} is provided, defaults to NULL
 #' * \code{name_long} = character string specifying a long descriptive name; defaults to name_long="This is long name"
-#' * \code{name} = character string specifying the standard name, contains no whitespace and is case sensitive : defaults to name="this_is_standard_name"
+#' * \code{name} = character string specifying the standard name, contains no white space and is case sensitive : defaults to name="this_is_standard_name"
 #' * \code{units} = character string specifying the unit of measure of data; defaults to units="unit_of_measurement"
 #' * \code{dimn} = integer specifying the number of dimensions; defaults to NULL
 #' * \code{varn} = integer specifying the number of levels of variable; defaults to NULL
-#' * \code{timen} = integer specifiying the number of timesteps
+#' * \code{timen} = integer specifying the number of timesteps
 #' * \code{datadim} = integer specifying the dimension of data; defaults to 1
 #' * \code{expandValue} = numeric value or NA to fill in missing observations in \code{data}
 #' * \code{vardescr} = character string providing longer description of variable levels in data; defaults to NULL
@@ -47,6 +47,8 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   times <- ns <- lu.to <- value <- var1 <-  NULL
 
   #input check
+  
+  if(is.null(rasterfile)) stop(paste0("no rasterfile provided!"))
   if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
   if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
   if(is.null(by.time)) by.time <- 10
@@ -56,8 +58,10 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
   if(is.matrix(data) | is.data.frame(data) | !is.null(data)){
     filepath <- paste0(getwd())
+    
     if (is.matrix(data)) data <- as.data.frame(data)
-    res <- data %>% dplyr::select(times,ns,lu.to,value) %>% rename(var1="lu.to", times="times") %>% group_by(ns,var1,times) %>% summarize(value=sum(value)) %>% ungroup()
+    
+    res <- data %>% dplyr::select(times,ns,lu.to,value) %>% group_by(ns,var1,times) %>% summarize(value=sum(value)) %>% ungroup()
 
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
@@ -72,18 +76,19 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   on.exit(nc_close(ncid_out))
 
 
-  p4s = as.character(terra::crs(rasterfile))
-  na_sum = function(x) {return(sum(x[!is.na(x)]))}
-  geosims <- terra::rast(rasterfile, proj=TRUE)
+  p4s <- as.character(terra::crs(rasterfile, proj=TRUE))
+  na_sum <- function(x) {return(sum(x[!is.na(x)]))}
+  geosims <- terra::rast(rasterfile)
   #sp::proj4string(geosims) <- p4s
   geosims <- terra::project(geosims,p4s)
   save_geovals <- data.frame(terra::values(geosims))
-  colnames(save_geovals)<-"ns"
+  colnames(save_geovals) <- "ns"
   geosims_extent <- terra::ext(geosims)
 
   # Define some straightforward dimensions
   lon <- seq(geosims_extent[1]+(terra::res(geosims)[2]/2),geosims_extent[2]-(terra::res(geosims)[2]/2),length.out=dim(geosims)[2])
   lat <- seq(geosims_extent[4]-(terra::res(geosims)[1]/2),geosims_extent[3]+(terra::res(geosims)[1]/2),length.out=dim(geosims)[1])
+  
   time <- sort(seq.int(start.time,end.time,by.time))
 
   dim_lon <- ncdf4::ncdim_def("longitude", "degrees_east",lon,longname=NULL)
@@ -96,6 +101,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   nc_plot_list <- list()
   label_name_list <- list()
   label_num_list <- list()
+  
   for(ll in seq_len(length(variables))){
 
 
@@ -133,7 +139,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
       dim_temp_list[[kk+3]] <- dim_time
 
-      temp_nc_var <- ncvar_def(name = layer_temp$name,
+      temp_nc_var <- ncdf4::ncvar_def(name = layer_temp$name,
                                longname = layer_temp$name_long,
                                dim = dim_temp_list, units = layer_temp$units,
                                missval=fillvalue,prec = "double", compression = 9)
@@ -149,7 +155,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       layer_temp_df <- data.frame(layer_temp_df)
 
 
-      temp_nc_var <- ncvar_def(name = layer_temp$name,units = layer_temp$units,
+      temp_nc_var <- ncdf4::ncvar_def(name = layer_temp$name,units = layer_temp$units,
                                longname = layer_temp$name_long,
                                dim = dim_temp_list,
                                missval=fillvalue,prec = "double",compression = 9)
@@ -158,7 +164,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
     }
     # label and numbering
-    o_temp = match(save_geovals$ns,as.numeric(layer_temp_df[,c('ns')]))
+    o_temp = match(save_geovals$ns,as.integer(layer_temp_df[,c('ns')]))
     to_plot_temp = data.frame(layer_temp_df[o_temp,])
     colnames(to_plot_temp) <- gsub("[.]"," ",colnames(to_plot_temp))
 
@@ -176,18 +182,20 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     label_name_list[[ll]] <- label_names_temp_list
     label_num_list[[ll]] <- label_num_temp
   }
-  ncid_out <- nc_create(paste0(filepath,"/",filename),nc_var_list,force_v4=TRUE)
+  
+  ncid_out <- ncdf4::nc_create(paste0(filepath,"/",filename),nc_var_list,force_v4=TRUE)
+  
   ### add attributes
 
   for(pp in seq_len(length(nc_var_list))){
     nc_var_temp <- nc_var_list[[pp]]
     nc_plot_temp <- nc_plot_list[[pp]]
     #ncatt_put(ncid_out, nc_var_temp$name,"levels","gicht",prec="text")
-    ncatt_put(ncid_out, nc_var_temp$name,"description",paste(paste(" ",variables[[pp]]$vardescr, collapse="; ")), prec="text")
+    ncdf4::ncatt_put(ncid_out, nc_var_temp$name,"description",paste(paste(" ",variables[[pp]]$vardescr, collapse="; ")), prec="text")
 
 
     for (ii in 1:(ncol(nc_plot_temp)-1)) {
-      c <- NULL;d <- NULL;t <- NULL
+      c <- NULL; d <- NULL; t <- NULL
 
 
       slct <-  colnames(nc_plot_temp)[ii+1]
@@ -204,7 +212,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       start_temp <- c(1,1,c,d,t)
       count_temp <- c(ncol(temp_data),nrow(temp_data), rep(1,length(start_temp)-2))
       print(start_temp)
-      ncvar_put(ncid_out, nc_var_temp, t(temp_data), start=start_temp,
+      ncdf4::ncvar_put(ncid_out, nc_var_temp, t(temp_data), start=start_temp,
                 count=count_temp)
 
       #print(step)
@@ -219,10 +227,10 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
   #ncatt_put(ncid_out,0, "title", path)
-  ncatt_put(ncid_out,0, "institution", "IIASA")
+  ncdf4::ncatt_put(ncid_out,0, "institution", "IIASA")
   history <- paste("Leopold J.C. Ringwald", date(), sep=", ")
-  ncatt_put(ncid_out,0, "history", history)
-  ncatt_put(ncid_out,0, "raster metadata",  paste("CRS: ",as.character(terra::crs(rasterfile)),"   Extent:", paste(geosims_extent[1:4],collapse=", "), " (xmin,xmax,ymin,ymax)", "   Resolution:", paste(terra::res(rasterfile), collapse=";")))
+  ncdf4::ncatt_put(ncid_out,0, "history", history)
+  ncdf4::ncatt_put(ncid_out,0, "raster metadata",  paste("CRS: ",p4s,"   Extent:", paste(geosims_extent[1:4],collapse=", "), " (xmin,xmax,ymin,ymax)", "   Resolution:", paste(terra::res(rasterfile), collapse=";")))
 
 
   #nc_close(ncid_out)
