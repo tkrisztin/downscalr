@@ -4,16 +4,12 @@
 \alias{LU_to_LUC}
 \title{Convert land-use transition targets to gross land-use change transition targets}
 \usage{
-LU_to_LUC(targets.from, targets.to, restrictions = NULL, keep_areas = "both")
+LU_to_LUC(targets.from, targets.to, keep_areas = "both")
 }
 \arguments{
 \item{targets.from}{A dataframe with columns lu and value (has to be numeric and >=0)}
 
 \item{targets.to}{A dataframe with columns lu and value (has to be numeric and >=0)}
-
-\item{restrictions}{A dataframe with columns lu.from (string), lu.to (string). Each row
-of the dataframe specifies which transitions will be set to zero in the returned
-land-use change transitions.}
 
 \item{keep_areas}{Either "from", "to" or "both" (default). If \code{sum(targets.from$value)} is not
 equal to \code{sum(targets.to$value)} this parameter specifies to which value the output should sum to.
