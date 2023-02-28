@@ -51,28 +51,21 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
       if (sum(targets.from$value) > sum(targets.to$value)) {
         targets.to = bind_rows(targets.to,
                                data.frame(lu = "NODATA",
-                                   value = sum(targets.from$value) - sum(targets.to$value)))
+                                          value = sum(targets.from$value) - sum(targets.to$value)))
       } else {
         targets.from = bind_rows(targets.from,
-                              data.frame(lu = "NODATA",
-                                 value = sum(targets.to$value) - sum(targets.from$value)))
+                                 data.frame(lu = "NODATA",
+                                            value = sum(targets.to$value) - sum(targets.from$value)))
       }
     }
   } else {stop("keep_areas has to be ('from','to','both').")  }
 
   n = length(lu_classes)
-<<<<<<< HEAD
   lu = value = NULL # for code check and dplyr
   targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = join_by(lu)) %>%
     replace_na(list(value = 0))
- targets.from =
+  targets.from =
     data.frame(lu = lu_classes) %>% left_join(targets.from,by = join_by(lu)) %>%
-=======
-  matA = diag(n) + 10^-8; matA = matA / rowSums(matA)
-  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = c("lu")) %>%
-    replace_na(list(value = 0))
-  targets.from = data.frame(lu = lu_classes) %>% left_join(targets.from,by = c("lu")) %>%
->>>>>>> ec06a09027a2b6f096c60e571f8a72942e9caa01
     replace_na(list(value = 0))
 
   matA = diag(c(targets.from$value)) + min_cutoff
@@ -82,10 +75,10 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
     matA = matA[-which(targets.from$value==0),]
     targets.from = targets.from[-which(targets.from$value==0),]
   }
- if (any(targets.to$value == 0)) {
-   matA = matA[,-which(targets.to$value==0)]
-   targets.to = targets.to[-which(targets.to$value==0),]
- }
+  if (any(targets.to$value == 0)) {
+    matA = matA[,-which(targets.to$value==0)]
+    targets.to = targets.to[-which(targets.to$value==0),]
+  }
 
   res = fienberg(start_mat=matA,target_from=targets.from$value,target_to=targets.to$value)
 
