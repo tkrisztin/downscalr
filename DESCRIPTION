@@ -27,7 +27,6 @@ Imports:
     methods,
     ncdf4,
     nloptr,
-    raster,
     sp,
     terra,
     tibble,
