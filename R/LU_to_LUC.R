@@ -61,11 +61,18 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
   } else {stop("keep_areas has to be ('from','to','both').")  }
 
   n = length(lu_classes)
+<<<<<<< HEAD
   lu = value = NULL # for code check and dplyr
   targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = join_by(lu)) %>%
     replace_na(list(value = 0))
  targets.from =
     data.frame(lu = lu_classes) %>% left_join(targets.from,by = join_by(lu)) %>%
+=======
+  matA = diag(n) + 10^-8; matA = matA / rowSums(matA)
+  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = c("lu")) %>%
+    replace_na(list(value = 0))
+  targets.from = data.frame(lu = lu_classes) %>% left_join(targets.from,by = c("lu")) %>%
+>>>>>>> ec06a09027a2b6f096c60e571f8a72942e9caa01
     replace_na(list(value = 0))
 
   matA = diag(c(targets.from$value)) + min_cutoff

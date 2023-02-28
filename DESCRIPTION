@@ -29,6 +29,7 @@ Imports:
     nloptr,
     raster,
     sp,
+    terra,
     tibble,
     tidyr
 Suggests: 

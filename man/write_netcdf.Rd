@@ -2,54 +2,56 @@
 % Please edit documentation in R/write_netcdf.R
 \name{write_netcdf}
 \alias{write_netcdf}
-\title{Function to write results from downscalr into NetCDF file format}
+\title{Function to write results from downscalr or other sources into netCDF file format}
 \usage{
 write_netcdf(
-  res,
-  rasterfile,
-  filename = "nc_v1.nc",
-  raster.crs = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+  data = NULL,
+  rasterfile = NULL,
+  variables = list(name_long = "This is long name", name = "this_is_standard_name", units
+    = "unit_of_measurement", dimname = "dim_name", dimn = 3, varn = NULL, timen = NULL,
+    datadim = 1, expandValue = 0, data = NULL, vardescr = NULL, create.dimvar = TRUE),
+  start.time = NULL,
+  end.time = NULL,
+  by.time = 10,
+  filename = NULL,
+  filepath = NULL
 )
 }
 \arguments{
-\item{res}{Result from downscale}
+\item{data}{If not provided in \code{variables}, either a dataframe or matrix object with columns ns, times (optional), lu.to and value; defaults to NULL}
 
 \item{rasterfile}{RasterLayer object with ns as values}
 
-\item{filename}{Name and path of NetCDF file}
+\item{variables}{A list containing:
+\itemize{
+\item \code{data} = a data frame object with columns ns, times (optional), lu.to and value. Overridden if argument \code{data} is provided, defaults to NULL
+\item \code{name_long} = character string specifying a long descriptive name; defaults to name_long="This is long name"
+\item \code{name} = character string specifying the standard name, contains no whitespace and is case sensitive : defaults to name="this_is_standard_name"
+\item \code{units} = character string specifying the unit of measure of data; defaults to units="unit_of_measurement"
+\item \code{dimn} = integer specifying the number of dimensions; defaults to NULL
+\item \code{varn} = integer specifying the number of levels of variable; defaults to NULL
+\item \code{timen} = integer specifiying the number of timesteps
+\item \code{datadim} = integer specifying the dimension of data; defaults to 1
+\item \code{expandValue} = numeric value or NA to fill in missing observations in \code{data}
+\item \code{vardescr} = character string providing longer description of variable levels in data; defaults to NULL
+\item \code{create.dimvar} = either TRUE or FALSE, defines if dimension variable of \code{data} should be created or not; defaults to TRUE
+}}
 
-\item{raster.crs}{CRS of raster}
+\item{start.time}{Integer defining first time step of time dimension to write, if dimension \code{times} is provided in \code{data} or \code{variables}, ; defaults to min(data$times) per variable}
+
+\item{end.time}{Integer defining last time step of time dimension to write, if dimension \code{times} is provided in \code{data} or \code{variables}, ; defaults to min(data$times) per variable}
+
+\item{by.time}{Integer specifying interval of time steps to be written between \code{start.time} and \code{end.time}; defaults to 10}
+
+\item{filename}{Character string of netCDF file name, has to include ".nc" extension; defaults to filename="Downscale_netCDF.nc"}
+
+\item{filepath}{Character string to specify file path netCDF is written to, defaults to current working directory}
 }
 \value{
 \itemize{
-\item \file{write_netcdf} with name and path specified in filename function argument
+\item Outputs \file{netCDF} file with \code{filename} written into \code{filepath} as specified in function arguments
 }
 }
 \description{
-Function to write results from downscalr into NetCDF file format
-}
-\examples{
-require(dplyr)
-require(tidyr)
-require(tibble)
-require(ncdf4)
-require(raster)
-
-## A basic example to plot the observed LU changes
-
-areas <- data.frame(ns=getValues(argentina_raster),
-                    area=getValues(area(argentina_raster))) \%>\%
-         na.omit() \%>\%
-         group_by(ns) \%>\%
-         summarise(area=sum(area)) \%>\%
-         mutate(ns=as.character(ns))
-
-to.plot <- argentina_luc \%>\%
-           rename("times"="Ts") \%>\%
-           left_join(areas) \%>\%
-           mutate(value=value*area) \%>\%
-           dplyr::select(-area)
-
-\dontrun{write_netcdf(to.plot ,argentina_raster, filename="argentina.nc")}
-
+Function to write results from downscalr or other sources into netCDF file format
 }

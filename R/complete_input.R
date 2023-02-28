@@ -65,7 +65,9 @@ complete_xmat = function(xmat) {
     dplyr::right_join(xmat %>%
                         tidyr::expand(.data$ns,.data$ks),
                       by = c("ns", "ks")) %>%
-    tidyr::replace_na(list(value = 0))
+    tidyr::replace_na(list(value = 0)) %>%
+    dplyr::mutate(ns = as.character(.data$ns), ks = as.character(.data$ks))
+
   return(xmat)
 }
 
@@ -125,7 +127,8 @@ complete_priors = function(priors,xmat,targets) {
     priors %>% right_join(dplyr::select(xmat,ns) %>% distinct(),by= c("ns")) %>%
     tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
                             by= c("ns", "lu.from", "lu.to")) %>%
-    tidyr::replace_na(list(value = 0))
+    filter(lu.from != lu.to) %>%
+    tidyr::replace_na(list(value = 0, weight = 0))
   priors = dplyr::arrange(priors,.data$lu.from,.data$lu.to,.data$ns)
   return(priors)
 }
