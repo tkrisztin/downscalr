@@ -149,31 +149,8 @@ That's it! You successfully downscaled LUC from Cropland in Argentina from targe
 
 ## Visualize results
 ```{r eval=FALSE,include=FALSE}
-if (!require("ggplot2")) install.packages("ggplot2")
-if (!require("rasterVis")) install.packages("rasterVis")
-if (!require("rgdal")) install.packages("rgdal")
-if (!require("grid")) install.packages("grid")
-if (!require("scales")) install.packages("scales")
-if (!require("viridis")) install.packages("viridis")
-if (!require("ggthemes")) install.packages("ggthemes")
-if (!require("raster")) install.packages("raster")
-```
-
-```{r eval=FALSE,include=FALSE}
-#load some packages to plot
-library(ggplot2)
-library(rasterVis)
-library(rgdal)
-library(grid)
-library(scales)
-library(viridis)
-library(ggthemes)
-library(raster)
-```
-
-
-```{r}
 #load raster data for argentina
+argentina_raster = terra::rast("./inst/extdata/argentina_raster.grd")
 data(argentina_raster)
 
 #write_netcdf(data=results_DS$out.res, rasterfile=argentina_raster)
