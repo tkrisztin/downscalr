@@ -62,10 +62,10 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
 
   n = length(lu_classes)
   lu = value = NULL # for code check and dplyr
-  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = join_by(lu)) %>%
+  targets.to = data.frame(lu = lu_classes) %>% left_join(targets.to,by = c(("lu"))) %>%
     replace_na(list(value = 0))
   targets.from =
-    data.frame(lu = lu_classes) %>% left_join(targets.from,by = join_by(lu)) %>%
+    data.frame(lu = lu_classes) %>% left_join(targets.from,by = c("lu")) %>%
     replace_na(list(value = 0))
 
   matA = diag(c(targets.from$value)) + min_cutoff
