@@ -23,12 +23,11 @@
 #' ## A basic example
 LUC_plot <- function(res, rasterfile, year=NULL, LU=NULL, color = "Greens", label = "Area in ha per pixel"){
 
-  plot_spdf <- methods::as(rasterfile, "SpatialPixelsDataFrame")
-  plot_df <- methods::as(plot_spdf,"data.frame")
+  plot_df <- terra::as.data.frame(rasterfile, xy = TRUE, na.rm = FALSE)
 
   to.plot <- res$out.res
 
-  colnames(plot_df) <- c("ns", "x", "y")
+  colnames(plot_df) <- c("x", "y", "ns")
 
   ns = lu.to = times = value = x = y= NULL
   if(is.null(year) & is.null(LU)){

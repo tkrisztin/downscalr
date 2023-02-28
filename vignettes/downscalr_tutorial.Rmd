@@ -150,8 +150,7 @@ That's it! You successfully downscaled LUC from Cropland in Argentina from targe
 ## Visualize results
 ```{r eval=FALSE,include=FALSE}
 #load raster data for argentina
-argentina_raster = terra::rast("./inst/extdata/argentina_raster.grd")
-data(argentina_raster)
+argentina_raster = terra::rast(system.file("extdata", "argentina_raster.grd", package = "downscalr"))
 
 #write_netcdf(data=results_DS$out.res, rasterfile=argentina_raster)
 # call plot function & plot downscaled LUC projections from Cropland for the year 2010
