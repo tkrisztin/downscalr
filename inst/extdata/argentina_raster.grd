@@ -1,0 +1,20 @@
+[general]
+[data]
+datatype=FLT4S
+nodatavalue=nan
+byteorder=little
+nbands=1
+minvalue=0
+maxvalue=212095
+categorical=FALSE
+[description]
+layername=w001001
+[georeference]
+nrows=421
+ncols=237
+xmin=-73.4167091179999858
+ymin=-55.9166802020000162
+xmax=-53.6667170179999857
+ymax=-20.8333609020000097
+projection=+proj=longlat +datum=WGS84 +no_defs
+wkt=GEOGCRS["unknown",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ID["EPSG",6326]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8901]],CS[ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]]

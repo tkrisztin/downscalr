@@ -18,19 +18,19 @@ write_netcdf(
 )
 }
 \arguments{
-\item{data}{If not provided in \code{variables}, either a dataframe or matrix object with columns ns, times (optional), lu.to and value; defaults to NULL}
+\item{data}{If not provided in \code{variables}, either a dataframe or matrix object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value; defaults to NULL}
 
-\item{rasterfile}{RasterLayer object with ns as values}
+\item{rasterfile}{Raster object with ns as cell values}
 
-\item{variables}{A list containing:
+\item{variables}{A list of lists for each variable to be written or if \code{data} is provided a list of netCDF attribute settings as follows:
 \itemize{
-\item \code{data} = a data frame object with columns ns, times (optional), lu.to and value. Overridden if argument \code{data} is provided, defaults to NULL
+\item \code{data} = a data frame object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value. Overridden if argument \code{data} is provided, defaults to NULL
 \item \code{name_long} = character string specifying a long descriptive name; defaults to name_long="This is long name"
-\item \code{name} = character string specifying the standard name, contains no whitespace and is case sensitive : defaults to name="this_is_standard_name"
+\item \code{name} = character string specifying the standard name, contains no white space and is case sensitive : defaults to name="this_is_standard_name"
 \item \code{units} = character string specifying the unit of measure of data; defaults to units="unit_of_measurement"
 \item \code{dimn} = integer specifying the number of dimensions; defaults to NULL
 \item \code{varn} = integer specifying the number of levels of variable; defaults to NULL
-\item \code{timen} = integer specifiying the number of timesteps
+\item \code{timen} = integer specifying the number of timesteps
 \item \code{datadim} = integer specifying the dimension of data; defaults to 1
 \item \code{expandValue} = numeric value or NA to fill in missing observations in \code{data}
 \item \code{vardescr} = character string providing longer description of variable levels in data; defaults to NULL
