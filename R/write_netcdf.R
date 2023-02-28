@@ -2,7 +2,7 @@
 #' 
 #'
 #' @param data If not provided in \code{variables}, either a dataframe or matrix object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value; defaults to NULL
-#' @param rasterfile Raster object with ns as cell values
+#' @param rasterfile Raster grid object with ns as cell values
 #' @param filename Name of the output netCDF. Defaults to "Downscale_netCDF.nc"
 #' @param variables A list of lists for each variable to be written or if \code{data} is provided a list of netCDF attribute settings as follows:
 #' * \code{data} = a data frame object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value. Overridden if argument \code{data} is provided, defaults to NULL
@@ -48,7 +48,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
   #input check
   
-  if(is.null(rasterfile)) stop(paste0("no rasterfile provided!"))
+  if(is.null(rasterfile)) stop(paste0("No raster provided!"))
   if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
   if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
   if(is.null(by.time)) by.time <- 10

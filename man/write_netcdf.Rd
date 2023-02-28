@@ -20,7 +20,7 @@ write_netcdf(
 \arguments{
 \item{data}{If not provided in \code{variables}, either a dataframe or matrix object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value; defaults to NULL}
 
-\item{rasterfile}{Raster object with ns as cell values}
+\item{rasterfile}{Raster grid object with ns as cell values}
 
 \item{variables}{A list of lists for each variable to be written or if \code{data} is provided a list of netCDF attribute settings as follows:
 \itemize{
