@@ -61,7 +61,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     
     if (is.matrix(data)) data <- as.data.frame(data)
     
-    res <- data %>% dplyr::select(times,ns,lu.to,value) %>% group_by(ns,var1,times) %>% summarize(value=sum(value)) %>% ungroup()
+    res <- data %>% dplyr::select(times,ns,starts_with("var"),value) %>% group_by(ns,starts_with("var"),times) %>% summarize(value=sum(value)) %>% ungroup()
 
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
