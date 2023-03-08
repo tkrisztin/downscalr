@@ -72,11 +72,11 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
   matA = diag(n) + min_cutoff; matA = matA / rowSums(matA)
   colnames(matA) = rownames(matA) = lu_classes
   if (any(targets.from$value == 0)) {
-    matA = matA[-which(targets.from$value==0),]
+    matA = matA[-which(targets.from$value==0),,drop = FALSE]
     targets.from = targets.from[-which(targets.from$value==0),]
   }
   if (any(targets.to$value == 0)) {
-    matA = matA[,-which(targets.to$value==0)]
+    matA = matA[,-which(targets.to$value==0),drop = FALSE]
     targets.to = targets.to[-which(targets.to$value==0),]
   }
 
