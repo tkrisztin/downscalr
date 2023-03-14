@@ -39,12 +39,14 @@ fienberg = function(start_mat,target_from,target_to) {
   Tol.optim = 10^-8
   curr.gain = Inf
   Tol.gain = 10^-10
-  while (curr.gain > Tol.gain && curr.optimVal > Tol.optim) {
+  iter = 0
+  while ( (curr.gain > Tol.gain && curr.optimVal > Tol.optim) || iter <10) {
     S = start_mat * matrix(target_to / colSums(start_mat * target_from),n,k,byrow = T)
     start_mat = S * 1/rowSums(S)
     ttemp =sqrt(mean((target_to - colSums(start_mat * target_from))^2))
     curr.gain = curr.optimVal - ttemp
     curr.optimVal = ttemp
+    iter = iter + 1
   }
   return(list(start_mat = start_mat,optimVal = curr.optimVal,gain = curr.gain))
 }
