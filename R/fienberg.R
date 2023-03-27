@@ -38,15 +38,26 @@ fienberg = function(start_mat,target_from,target_to) {
   curr.optimVal = Inf
   Tol.optim = 10^-8
   curr.gain = Inf
+  Max.iter = 1000
   Tol.gain = 10^-10
   iter = 0
-  while ( (curr.gain > Tol.gain && curr.optimVal > Tol.optim) || iter <10) {
+  while ( (curr.gain > Tol.gain && curr.optimVal > Tol.optim && iter < Max.iter) || iter <10) {
     S = start_mat * matrix(target_to / colSums(start_mat * target_from),n,k,byrow = T)
     start_mat = S * 1/rowSums(S)
     ttemp =sqrt(mean((target_to - colSums(start_mat * target_from))^2))
-    curr.gain = curr.optimVal - ttemp
+    curr.gain = abs(curr.optimVal - ttemp)
     curr.optimVal = ttemp
     iter = iter + 1
   }
-  return(list(start_mat = start_mat,optimVal = curr.optimVal,gain = curr.gain))
+  if (curr.gain > Tol.gain) {
+    stop.reason = paste0("Gain in objective value smaller than tolerance ",Tol.gain,".")
+  } else if (curr.optimVal > Tol.optim) {
+    stop.reason = paste0("Objective value smaller than  tolerance ",Tol.optim,".")
+  } else {
+    stop.reason = paste0("Maximum iterations reached (",Max.iter,").")
+  }
+  return(list(start_mat = start_mat,
+              optimVal = curr.optimVal,
+              gain = curr.gain,
+              iter = iter))
 }
