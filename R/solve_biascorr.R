@@ -160,6 +160,15 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       exo.priors[is.na(exo.priors)] = 0
       priors.mu[,mixed_priors] = as.matrix((1-w1)*priors.mu[,mixed_priors] + w1*exo.priors)
     }
+    # BUGFIX: if priors.mu[,colnames(curr.betas)] are numerically very small and
+    #   reference class targets is close to zero, we need to add areas for numerical
+    #   stability
+    adjusted_areas_own_flow = FALSE
+    if ( sum(curr.targets) > 0 &&
+      ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < 10^-6){
+      adjusted_areas_own_flow = TRUE
+      curr.areas[curr.areas > 0] = curr.areas[curr.areas > 0] + 1
+    }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
     if (all(curr.targets == 0)) {
@@ -174,6 +183,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         priors.mu = priors.mu[,not.zero,drop = FALSE]
         if (!is.null(curr.restrictions)) {restr.mat = restr.mat[,not.zero,drop = FALSE]}
       }
+
       #proceed with bias correction
       x0 = curr.targets / sum(curr.targets + 1)
       opts <- list(algorithm = options$algorithm,
@@ -212,6 +222,12 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     res.agg <- out.res2 %>%
         pivot_longer(cols = -c("ns"),names_to = "lu.to") %>%
       bind_cols(lu.from = curr.lu.from)
+
+    # BUGFIX: we have adjusted the areas as there were no implied own flows
+    #   we cut these out ex-post
+    if ( adjusted_areas_own_flow ){
+      res.agg = filter(res.agg,lu.from!=lu.to)
+    }
 
     # aggregate results over dataframes
     if(curr.lu.from==lu.from[1]){
