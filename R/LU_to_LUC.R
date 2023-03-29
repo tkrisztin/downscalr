@@ -28,7 +28,8 @@
 #'  targets.to = data.frame(lu = c("crop","grass","forest"),value = c(3,5,7))
 #'  res = LU_to_LUC(targets.from = targets.from,targets.to = targets.to)
 LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
-  min_cutoff = 10^-8
+  min_cutoff = 1.0e-8
+  prior_off_diag = 0.1
 
   #Error check of targets.from and targets.to
   check_names = all(tibble::has_name(targets.from, c("lu","value")))
@@ -68,8 +69,8 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
     data.frame(lu = lu_classes) %>% left_join(targets.from,by = c("lu")) %>%
     replace_na(list(value = 0))
 
-  matA = diag(c(targets.from$value)) + min_cutoff
-  matA = diag(n) + min_cutoff; matA = matA / rowSums(matA)
+  #matA = diag(c(targets.from$value)) + prior_off_diag
+  matA = diag(n) + prior_off_diag; matA = matA / rowSums(matA)
   colnames(matA) = rownames(matA) = lu_classes
   if (any(targets.from$value == 0)) {
     matA = matA[-which(targets.from$value==0),,drop = FALSE]

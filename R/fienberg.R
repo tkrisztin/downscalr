@@ -59,5 +59,6 @@ fienberg = function(start_mat,target_from,target_to) {
   return(list(start_mat = start_mat,
               optimVal = curr.optimVal,
               gain = curr.gain,
-              iter = iter))
+              iter = iter,
+              stop.reason = stop.reason))
 }
