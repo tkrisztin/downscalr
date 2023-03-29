@@ -56,10 +56,6 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     names(curr.targets) <- targets$lu.to[targets$lu.from == curr.lu.from]
     curr.lu.to = names(curr.targets)
 
-    # Extract areas
-    curr.areas = dplyr::filter(areas,lu.from == curr.lu.from)$value
-    names(curr.areas) <- areas$ns[areas$lu.from == curr.lu.from]
-
     # Extract betas
     curr.betas = dplyr::filter(betas,lu.from == curr.lu.from & lu.to %in% curr.lu.to) %>%
       tidyr::pivot_wider(names_from = "lu.to",values_from = "value",id_cols = "ks") %>%
@@ -73,6 +69,12 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       tibble::column_to_rownames(var = "ns") %>%
       dplyr::select(rownames(curr.betas))
     curr.xmat = as.matrix(curr.xmat)
+
+    # Extract areas
+    curr.areas = dplyr::filter(areas,lu.from == curr.lu.from)$value
+    names(curr.areas) <- areas$ns[areas$lu.from == curr.lu.from]
+    # BUGFIX: MW, order of curr.areas wrong, need to re-arrange based on xmat
+    curr.areas = curr.areas[match(rownames(curr.xmat),names(curr.areas))]
 
     # Extract priors
     ## IMPORTANT CHECK ORDER OF VARIABLES SIMILARLY TO XMAT
