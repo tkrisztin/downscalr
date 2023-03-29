@@ -117,16 +117,6 @@ downscale = function(targets,
     err.txt
   )
 
-  # check if all lu in start.area in targets
-  if (!all(unique(start.areas$lu.from) %in% unique(targets$lu.from))) {
-    # if not save them to a table and add them back manually
-    missing_luc = unique(start.areas$lu.from)[!unique(start.areas$lu.from) %in% unique(targets$lu.from)]
-    missing_luc = dplyr::filter(start.areas, lu.from %in% missing_luc) %>%
-      mutate(lu.to = lu.from)
-  } else {
-    missing_luc = NULL
-  }
-
   # save column types of xmat
   if (any(xmat.coltypes$value == "projected")) {
     proj.colnames = filter(xmat.coltypes, .data$value == "projected")$ks
@@ -150,6 +140,19 @@ downscale = function(targets,
     if (any(priors$times == curr.time)) {
       curr.priors = filter(priors, times == curr.time) %>% dplyr::select(-times)
     } else {curr.priors = NULL}
+
+    # BUGFIX TK: added check for missing targets for every time iteration
+    #   This was before only done for the initial period, resulting in missed
+    #     land cover.
+    # check if all lu in curr.areas in curr.targets
+    if (!all(unique(curr.areas$lu.from) %in% unique(curr.targets$lu.from))) {
+      # if not save them to a table and add them back manually
+      missing_luc = unique(curr.areas$lu.from)[!unique(curr.areas$lu.from) %in% unique(curr.targets$lu.from)]
+      missing_luc = dplyr::filter(curr.areas, lu.from %in% missing_luc) %>%
+        mutate(lu.to = lu.from)
+    } else {
+      missing_luc = NULL
+    }
 
     if (options$solve_fun == "solve_biascorr") {
       curr.options = options
