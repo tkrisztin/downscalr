@@ -13,7 +13,8 @@ downscale_control(
   MAX_EXP = log(.Machine$double.xmax),
   cutoff = 0,
   redo = 2,
-  max_diff = 10^-8,
+  max_diff = 1e-08,
+  ref_class_adjust_threshold = 1e-08,
   err.txt = ""
 )
 }
@@ -36,6 +37,10 @@ valid R function. Defaults to \code{"solve_biascorr"}.}
 \item{redo}{Maximum number of repeats}
 
 \item{max_diff}{If difference to targets is larger, redo the estimation (helps to avoid convergence errors)}
+
+\item{ref_class_adjust_threshold}{IF the share of the implied target for the multinomial logit
+reference class is smaller than this threshold, assitional areas will be artificially created
+(and automatically removed after solve) for numerical stability. Default to \code{1.0e-8}.}
 
 \item{err.txt}{Error text for caller identification (used for debugging)}
 }

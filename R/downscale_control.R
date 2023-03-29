@@ -14,6 +14,9 @@
 #' @param err.txt Error text for caller identification (used for debugging)
 #' @param max_diff If difference to targets is larger, redo the estimation (helps to avoid convergence errors)
 #' @param redo Maximum number of repeats
+#' @param ref_class_adjust_threshold IF the share of the implied target for the multinomial logit
+#' reference class is smaller than this threshold, assitional areas will be artificially created
+#' (and automatically removed after solve) for numerical stability. Default to \code{1.0e-8}.
 #'
 #' @return List with default options for bias correction solver
 #'
@@ -31,10 +34,12 @@
 downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_SBPLX",
                                   xtol_rel = 1.0e-20,xtol_abs = 1.0e-20,maxeval = 1600,
                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
-                                  redo = 2,max_diff = 10^-8,err.txt = "") {
+                                  redo = 2,max_diff = 1.0e-8,ref_class_adjust_threshold = 1.0e-8,
+                             err.txt = "") {
   if (!solve_fun %in% c("solve_biascorr")) {stop("solve_fun not correctly specified.")}
   return(list(solve_fun = solve_fun,algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
               maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,redo = redo,
-              max_diff = max_diff,err.txt = err.txt
+              max_diff = max_diff,ref_class_adjust_threshold=ref_class_adjust_threshold,
+              err.txt = err.txt
   ))
 }

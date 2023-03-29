@@ -154,7 +154,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       exo.priors_min = apply(exo.priors, 2, min)
       exo.priors_max = apply(exo.priors, 2, max)
       exo.priors = t(
-        t(exo.priors - exo.priors_min) / (exo.priors_max - exo.priors_min) *
+        (t(exo.priors) - exo.priors_min) / (exo.priors_max - exo.priors_min) *
           (eco.priors_max - eco.priors_min) + eco.priors_min
       )
       exo.priors[is.na(exo.priors)] = 0
@@ -165,7 +165,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     #   stability
     adjusted_areas_own_flow = FALSE
     if ( sum(curr.targets) > 0 &&
-      ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < 10^-6){
+      ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < options$ref_class_adjust_threshold){
       adjusted_areas_own_flow = TRUE
       curr.areas[curr.areas > 0] = curr.areas[curr.areas > 0] + 1
     }
@@ -182,6 +182,14 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         curr.targets = curr.targets[not.zero]
         priors.mu = priors.mu[,not.zero,drop = FALSE]
         if (!is.null(curr.restrictions)) {restr.mat = restr.mat[,not.zero,drop = FALSE]}
+      }
+
+      # BUGFIX: if any priors.mu close to zero optimisation might break
+      #   down. Rebalance to between 0 and 1.
+      if (any(apply(priors.mu, c(2),max) < 10^-8)) {
+        p.min = apply(priors.mu,c(2),min)
+        p.max = apply(priors.mu,c(2),max)
+        priors.mu = t( (t(priors.mu) - p.min) / (p.max - p.min))
       }
 
       #proceed with bias correction
@@ -226,7 +234,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     # BUGFIX: we have adjusted the areas as there were no implied own flows
     #   we cut these out ex-post
     if ( adjusted_areas_own_flow ){
-      res.agg = filter(res.agg,lu.from!=lu.to)
+      res.agg = dplyr::filter(res.agg,lu.from!=lu.to)
     }
 
     # aggregate results over dataframes
