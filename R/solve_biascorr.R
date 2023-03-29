@@ -74,7 +74,9 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     curr.areas = dplyr::filter(areas,lu.from == curr.lu.from)$value
     names(curr.areas) <- areas$ns[areas$lu.from == curr.lu.from]
     # BUGFIX: MW, order of curr.areas wrong, need to re-arrange based on xmat
-    curr.areas = curr.areas[match(rownames(curr.xmat),names(curr.areas))]
+    if (nrow(curr.xmat) > 0) {
+      curr.areas = curr.areas[match(rownames(curr.xmat),names(curr.areas))]
+    }
 
     # Extract priors
     ## IMPORTANT CHECK ORDER OF VARIABLES SIMILARLY TO XMAT
