@@ -4,12 +4,14 @@
 \alias{LU_to_LUC}
 \title{Convert land-use transition targets to gross land-use change transition targets}
 \usage{
-LU_to_LUC(targets.from, targets.to, keep_areas = "both")
+LU_to_LUC(targets.from, targets.to, prior = NULL, keep_areas = "both")
 }
 \arguments{
 \item{targets.from}{A dataframe with columns lu and value (has to be numeric and >=0)}
 
 \item{targets.to}{A dataframe with columns lu and value (has to be numeric and >=0)}
+
+\item{prior}{A dataframe with columns lu.from, lu.to and value (has to be numeric and >=0)}
 
 \item{keep_areas}{Either "from", "to" or "both" (default). If \code{sum(targets.from$value)} is not
 equal to \code{sum(targets.to$value)} this parameter specifies to which value the output should sum to.
@@ -24,7 +26,9 @@ Convert land-use transition targets to gross land-use change transition targets
 \details{
 When given two land-use targets, this function creates potential gross land-use
 changes between them using Fienberg rebalancing. The transitions are forced towards
-keeping as much targets in the same class as possible.
+keeping as much targets in the same class as possible. Using the prior argument you
+can either fully cancel out certain transitions (value=0) or put more emphasis on them
+(value>>0).
 
 The total set of land use classes is the combination of unique \code{lu} values from
 \code{targets.from} and \code{targets.to}.  If \code{keep_areas = "both"} the
@@ -34,6 +38,7 @@ equal to \code{targets.to}.
 }
 \examples{
  targets.from = data.frame(lu = c("crop","grass"),value = c(10,5))
- targets.to = data.frame(lu = c("crop","grass","forest"),value = c(3,5,7))
- res = LU_to_LUC(targets.from = targets.from,targets.to = targets.to)
+ targets.to = data.frame(lu = c("crop","grass","forest"),value = c(3,4,8))
+ prior = data.frame(lu.from = "grass", lu.to = "forest", value = 0)
+ res = LU_to_LUC(targets.from = targets.from,targets.to = targets.to, prior = prior)
 }

@@ -5,6 +5,7 @@
 #'
 #' @param targets.from A dataframe with columns lu and value (has to be numeric and >=0)
 #' @param targets.to A dataframe with columns lu and value (has to be numeric and >=0)
+#' @param prior A dataframe with columns lu.from, lu.to and value (has to be numeric and >=0)
 #' @param keep_areas Either "from", "to" or "both" (default). If \code{sum(targets.from$value)} is not
 #' equal to \code{sum(targets.to$value)} this parameter specifies to which value the output should sum to.
 #' If "both" is given and the sums differ, an artificial land use class \code{NODATA} is created.
@@ -12,7 +13,9 @@
 #' @details
 #' When given two land-use targets, this function creates potential gross land-use
 #' changes between them using Fienberg rebalancing. The transitions are forced towards
-#' keeping as much targets in the same class as possible.
+#' keeping as much targets in the same class as possible. Using the prior argument you
+#' can either fully cancel out certain transitions (value=0) or put more emphasis on them
+#' (value>>0).
 #'
 #' The total set of land use classes is the combination of unique \code{lu} values from
 #' \code{targets.from} and \code{targets.to}.  If \code{keep_areas = "both"} the
@@ -25,9 +28,10 @@
 #'
 #' @examples
 #'  targets.from = data.frame(lu = c("crop","grass"),value = c(10,5))
-#'  targets.to = data.frame(lu = c("crop","grass","forest"),value = c(3,5,7))
-#'  res = LU_to_LUC(targets.from = targets.from,targets.to = targets.to)
-LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
+#'  targets.to = data.frame(lu = c("crop","grass","forest"),value = c(3,4,8))
+#'  prior = data.frame(lu.from = "grass", lu.to = "forest", value = 0)
+#'  res = LU_to_LUC(targets.from = targets.from,targets.to = targets.to, prior = prior)
+LU_to_LUC = function(targets.from, targets.to, prior=NULL, keep_areas = "both") {
   min_cutoff = 1.0e-8
   prior_off_diag = 0.1
 
@@ -72,6 +76,15 @@ LU_to_LUC = function(targets.from, targets.to, keep_areas = "both") {
   #matA = diag(c(targets.from$value)) + prior_off_diag
   matA = diag(n) + prior_off_diag; matA = matA / rowSums(matA)
   colnames(matA) = rownames(matA) = lu_classes
+
+  if(!is.null(prior)){
+    for(jjj in 1:nrow(prior)){
+      row.pointer <- grep(prior$lu.from[jjj], rownames(matA))
+      col.pointer <- grep(prior$lu.to[jjj], colnames(matA))
+      matA[row.pointer,col.pointer] <- prior$value[jjj]
+    }
+  }
+
   if (any(targets.from$value == 0)) {
     matA = matA[-which(targets.from$value==0),,drop = FALSE]
     targets.from = targets.from[-which(targets.from$value==0),]
