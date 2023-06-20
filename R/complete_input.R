@@ -213,60 +213,61 @@ complete_xmat.proj = function(xmat.proj) {
 #' @param targets Dataframe of targets, must have columns lu.to and value
 #' @param areas Dataframe of areas, must have columns ns and value#' @
 #'
-#' Internal function. Adds missing columns and completes potential sparse dataframes.
+#' Internal function. Checks if targets are fullfillable over time before downscaling.
 #' @keywords internal
 #' 
 target_area_check <- function(targets, areas){
   
-  temp_curr.lu_levels = temp_lu.from.targets = temp_lu.to.targets = lu.from = value = times = value_net = lu.to = value.lu.to = NULL 
-  
+  temp_curr.lu_levels = temp_lu.from.targets = temp_lu.to.targets = lu.from = value = times = value_net = lu.to = value.lu.to = value.lu.from = . = NULL
+
   timesteps <- base::sort(base::unique(targets$times))
-  
+
   jjj <- timesteps[1]
   for(jjj in timesteps){
-    
-    if(jjj==timesteps[1]) { 
-      temp_curr.lu_levels <- areas %>% 
-        dplyr::group_by(lu.from) %>% 
-        dplyr::reframe(value=sum(value)) 
+
+    if(jjj==timesteps[1]) {
+      temp_curr.lu_levels <- areas %>%
+        dplyr::group_by(lu.from) %>%
+        dplyr::summarize(value=sum(value))
     }
-    
-    temp_lu.from.targets <- targets %>% 
-      dplyr::filter(times == c(jjj)) %>% 
-      dplyr::group_by(lu.from) %>% 
-      dplyr::reframe(value.lu.from=sum(value))
-    
-    temp_curr.lu_levels <- temp_curr.lu_levels %>% 
-      dplyr::left_join(temp_lu.from.targets, by=c("lu.from")) %>% 
+
+    temp_lu.from.targets <- targets %>%
+      dplyr::filter(times == c(jjj)) %>%
+      dplyr::group_by(lu.from) %>%
+      dplyr::summarize(value.lu.from=sum(value))
+
+    temp_curr.lu_levels <- temp_curr.lu_levels %>%
+      dplyr::left_join(temp_lu.from.targets, by=c("lu.from")) %>%
       base::replace(is.na(.),0) %>%
-      dplyr::mutate(value=value-value.lu.from) %>% 
+      dplyr::mutate(value=value-value.lu.from) %>%
       dplyr::select(!value.lu.from)
-    
-    temp_lu.to.targets <- targets %>% 
-      dplyr::filter(times == c(jjj), value!=0) %>% 
-      dplyr::left_join(temp_curr.lu_levels %>% 
-                         dplyr::rename(value_net="value"), by="lu.from") %>% 
-      dplyr::group_by(lu.from) %>% 
-      dplyr::mutate(value=ifelse(value_net<0, value+(value_net/n()), value)) %>% 
-      dplyr::ungroup() %>% 
-      dplyr::group_by(lu.to) %>% 
-      dplyr::reframe(value.lu.to=sum(value))
-    
+
+    temp_lu.to.targets <- targets %>%
+      dplyr::filter(times == c(jjj), value!=0) %>%
+      dplyr::left_join(temp_curr.lu_levels %>%
+                         dplyr::rename(value_net="value"), by="lu.from") %>%
+      dplyr::group_by(lu.from) %>%
+      dplyr::mutate(value=ifelse(value_net<0, value+(value_net/n()), value)) %>%
+      dplyr::ungroup() %>%
+      dplyr::group_by(lu.to) %>%
+      dplyr::summarize(value.lu.to=sum(value))
+
     if(any(temp_curr.lu_levels$value<0)) {
       base::cat(paste0("Total area to target mismatch in timestep ", jjj," in the following class(es):"),
-              knitr::kable(temp_curr.lu_levels %>% 
-                             dplyr::filter(value<0) %>% 
-                             dplyr::rename(class="lu.from")), sep="\n") 
+              knitr::kable(temp_curr.lu_levels %>%
+                             dplyr::filter(value<0) %>%
+                             dplyr::rename(class="lu.from")), sep="\n")
     }
-    
-    temp_curr.lu_levels <- temp_curr.lu_levels %>% 
-      dplyr::mutate(value=ifelse(value<0,0,value)) %>% 
-      dplyr::left_join(temp_lu.to.targets, by=c("lu.from"="lu.to")) %>% 
+
+    temp_curr.lu_levels <- temp_curr.lu_levels %>%
+      dplyr::mutate(value=ifelse(value<0,0,value)) %>%
+      dplyr::left_join(temp_lu.to.targets, by=c("lu.from"="lu.to")) %>%
       base::replace(is.na(.),0) %>%
-      dplyr::mutate(value=value+value.lu.to) %>% 
-      dplyr::select(!value.lu.to)                          
-    
+      dplyr::mutate(value=value+value.lu.to) %>%
+      dplyr::select(!value.lu.to)
+
   }
+
 }
 
 
