@@ -78,6 +78,7 @@ downscale = function(targets,
   err.txt = options$err.txt
   targets = complete_targets(targets)
   start.areas = complete_areas(start.areas)
+  target_area_check(targets,start.areas)
   if (is.null(xmat)) {
     xmat = data.frame(ns = unique(start.areas$ns),
                       ks = PLCHOLD_K,
