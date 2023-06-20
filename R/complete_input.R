@@ -218,7 +218,7 @@ complete_xmat.proj = function(xmat.proj) {
 #' 
 target_area_check <- function(targets, areas){
   
-  temp_curr.lu_levels <- NULL; temp_lu.from.targets <- NULL; temp_lu.to.targets <- NULL
+  temp_curr.lu_levels = temp_lu.from.targets = temp_lu.to.targets = lu.from = value = times = value_net = lu.to = value.lu.to = NULL 
   
   timesteps <- base::sort(base::unique(targets$times))
   
@@ -237,7 +237,7 @@ target_area_check <- function(targets, areas){
       dplyr::reframe(value.lu.from=sum(value))
     
     temp_curr.lu_levels <- temp_curr.lu_levels %>% 
-      dplyr::left_join(.,temp_lu.from.targets, by=c("lu.from")) %>% 
+      dplyr::left_join(temp_lu.from.targets, by=c("lu.from")) %>% 
       base::replace(is.na(.),0) %>%
       dplyr::mutate(value=value-value.lu.from) %>% 
       dplyr::select(!value.lu.from)
@@ -253,15 +253,15 @@ target_area_check <- function(targets, areas){
       dplyr::reframe(value.lu.to=sum(value))
     
     if(any(temp_curr.lu_levels$value<0)) {
-      cat(paste0("Total area to target mismatch in timestep ", jjj," in the following class(es):"),
-          knitr::kable(temp_curr.lu_levels %>% 
-                         dplyr::filter(value<0) %>% 
-                         dplyr::rename(class="lu.from")), sep="\n") 
+      base::cat(paste0("Total area to target mismatch in timestep ", jjj," in the following class(es):"),
+              knitr::kable(temp_curr.lu_levels %>% 
+                             dplyr::filter(value<0) %>% 
+                             dplyr::rename(class="lu.from")), sep="\n") 
     }
     
     temp_curr.lu_levels <- temp_curr.lu_levels %>% 
       dplyr::mutate(value=ifelse(value<0,0,value)) %>% 
-      dplyr::left_join(.,temp_lu.to.targets, by=c("lu.from"="lu.to")) %>% 
+      dplyr::left_join(temp_lu.to.targets, by=c("lu.from"="lu.to")) %>% 
       base::replace(is.na(.),0) %>%
       dplyr::mutate(value=value+value.lu.to) %>% 
       dplyr::select(!value.lu.to)                          
