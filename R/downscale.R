@@ -2,6 +2,7 @@
 #'
 #' @param targets A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)
 #' @param start.areas  A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)
+#' @param times Vector of time steps where downscaling is done. The first time step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time values in targets.
 #' @param xmat A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
 #' Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
 #' \code{lu.from} and \code{lu.to} in \code{targets}.
@@ -64,6 +65,7 @@
 #'
 downscale = function(targets,
                      start.areas,
+                     times = NULL,
                      xmat = NULL,
                      betas = NULL,
                      areas.update.fun = areas.sum_to,
@@ -130,7 +132,9 @@ downscale = function(targets,
   curr.xmat = xmat
   curr.restrictions = restrictions
 
-  times = unique(targets$times)
+  if (is.null(times)) {
+    times = unique(targets$times)
+  }
   out.solver <- list()
   for (curr.time in times) {
     # Extract targets
@@ -204,9 +208,9 @@ downscale = function(targets,
     # aggregate results over dataframes
     res.agg = data.frame(times = curr.time, res$out.res)
     if (curr.time == times[1]) {
-      out.res <- res.agg
+      out.res <- res.agg %>%  mutate(ns = as.character(.data$ns))
     } else {
-      out.res = bind_rows(out.res, res.agg)
+      out.res = bind_rows(out.res, res.agg %>%  mutate(ns = as.character(.data$ns)))
     }
   }
 

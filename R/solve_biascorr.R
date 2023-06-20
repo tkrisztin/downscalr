@@ -48,6 +48,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
 
   out.solver <- list()
   curr.lu.from <- lu.from[1]
+  full.out.res = NULL
   for(curr.lu.from in lu.from){
     err.txt = paste0(curr.lu.from," ",options$err.txt)
 
