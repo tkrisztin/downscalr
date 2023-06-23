@@ -153,9 +153,9 @@ complete_restrictions = function(restrictions,xmat) {
   #   (.data$ does not work in nested function)
   lu.from = lu.to = ns = NULL
   restrictions = restrictions %>%  dplyr::right_join(
-    restrictions %>% right_join(select(xmat,ns) %>% distinct(),.groups = "keep",by= c("ns")) %>%
-      tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to)),
-    .groups = "keep",by= c("ns", "lu.from", "lu.to")) %>%
+    restrictions %>% right_join(select(xmat,ns) %>% distinct(),by= c("ns")) %>%
+      tidyr::expand(.data$ns,nesting(lu.from,lu.to))  %>% filter(!is.na(lu.from) & !is.na(lu.to))
+    ,by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   restrictions = dplyr::arrange(restrictions,.data$lu.from,.data$lu.to,.data$ns)
   return(restrictions)
