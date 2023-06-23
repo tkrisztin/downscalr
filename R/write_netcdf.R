@@ -66,19 +66,20 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
     data_layer$varn <- length(unique(res$var1))
-
+    data_layer$data.dim <- length(grep("var",colnames(res)))
+    
     if(any(colnames(res) %in% "times")) data_layer$timen <- length(unique(res$times))
 
     variables <- list(data_layer)
 
   }
 
-  on.exit(nc_close(ncid_out))
+  on.exit(ncdf4::nc_close(ncid_out))
 
 
   p4s <- as.character(terra::crs(rasterfile, proj=TRUE))
   na_sum <- function(x) {return(sum(x[!is.na(x)]))}
-  geosims <- terra::rast(rasterfile)
+  if(as.character(class(rasterfile))!="SpatRaster") geosims <- terra::rast(rasterfile) else geosims <- rasterfile
   #sp::proj4string(geosims) <- p4s
   geosims <- terra::project(geosims,p4s)
   save_geovals <- data.frame(terra::values(geosims))
@@ -106,6 +107,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
     layer_temp <- variables[[ll]]
+    layer_temp$datadim <- length(grep("var", colnames(layer_temp$data)))
     dim_temp_list <- list(dim_lon,dim_lat)
     label_names_temp_list <- list()
 
@@ -129,7 +131,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       if(is.null(start.time)) start.time <- min(layer_temp$timen)
       if(is.null(end.time)) end.time <- max(layer_temp$timen)
 
-      layer_temp_df <- layer_temp$data %>% filter(times>=start.time, times<=end.time) %>% ungroup() %>% group_by(times,across(all_of(grep('var',colnames(layer_temp$data),value=TRUE)))) %>% arrange(times,across(all_of(grep('var',colnames(layer_temp$data),value=TRUE))), .by_group=TRUE) %>%
+      layer_temp_df <- layer_temp$data %>% filter(times>=start.time, times<=end.time) %>% ungroup() %>% group_by(times,across(starts_with("var"))) %>% arrange(times,across(starts_with("var")), .by_group=TRUE) %>%
         pivot_wider(id_cols = ns, names_from = c(times,grep('var',colnames(layer_temp$data),value=TRUE)), values_from = value)
 
       layer_temp_df[is.na(layer_temp_df)] <- layer_temp$expandValue
@@ -195,7 +197,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
     for (ii in 1:(ncol(nc_plot_temp)-1)) {
-      c <- NULL; d <- NULL; t <- NULL
+      t <- NULL ; #data_dim <- #c(rep(letters, )
 
 
       slct <-  colnames(nc_plot_temp)[ii+1]
