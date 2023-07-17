@@ -129,7 +129,10 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       p2_mixed = length(mixed_priors)
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
     } else {p2 = 0;p2_mixed = 0}
-    if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
+
+    #commented by Michael Wögerer, led to problems with 0 targets in cropsys DS
+    #if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
+
 
     # check restrictions for consistency
     if (!is.null(curr.restrictions) & any(colnames(curr.restrictions) %in% names(curr.targets))) {
