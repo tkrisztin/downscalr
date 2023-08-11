@@ -79,6 +79,27 @@ err_check_inputs = function(targets,areas,xmat,betas,
     if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
   }
 
+  # check column classes
+  if(any(sapply(targets[,-which(names(targets)=="value")], class)!="character") || !is.numeric(targets$value)) {stop(paste0(err.txt,"Wrong column class in targets!"))}
+  if(any(sapply(areas[,-which(names(areas)=="value")], class)!="character") || !is.numeric(areas$value)) {stop(paste0(err.txt,"Wrong column class in start.areas!"))}
+  if(any(sapply(xmat[,-which(names(xmat)=="value")], class)!="character") || !is.numeric(xmat$value)) {stop(paste0(err.txt,"Wrong column class in xmat!"))}
+  if(any(sapply(betas[,-which(names(betas)=="value")], class)!="character") || !is.numeric(betas$value)) {stop(paste0(err.txt,"Wrong column class in betas!"))}
+
+  if (!is.null(priors)) {
+    if (is.null(priors$weight)) {
+      if(any(sapply(priors[,-which(names(priors)=="value")], class)!="character") || !is.numeric(priors$value)) {stop(paste0(err.txt,"Wrong column class in priors!"))}
+    } else {
+     if(any(sapply(priors[,-which(names(priors)%in%c("value","weight"))], class)!="character") || !is.numeric(priors$value) || !is.numeric(priors$weight)) {stop(paste0(err.txt,"Wrong column class in priors!"))}
+    }
+  }
+  if (!is.null(restrictions)) {
+    if(any(sapply(restrictions[,-which(names(restrictions)=="value")], class)!="character") || !is.numeric(restrictions$value)) {stop(paste0(err.txt,"Wrong column class in restrictions!"))}
+  }
+  if (!is.null(xmat.proj)) {
+    if(any(sapply(xmat.proj[,-which(names(xmat.proj)=="value")], class)!="character") || !is.numeric(xmat.proj$value)) {stop(paste0(err.txt,"Wrong column class in xmat.proj!"))}
+  }
+
+
   # check values
   if (!all(targets$value >=0)) {
     targets$value[targets$value<0] = 0

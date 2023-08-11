@@ -20,17 +20,17 @@ downscale(
 )
 }
 \arguments{
-\item{targets}{A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)}
+\item{targets}{A dataframe including the columns: times (character), lu.from (character, optional), lu.to (character) and value (numeric) (all targets >= 0)}
 
-\item{start.areas}{A dataframe of areas with columns lu.from (optional), ns and value, with all areas >= 0 and with sum(areas) >= sum(targets)}
+\item{start.areas}{A dataframe containing the starting areas with columns lu.from (character, optional), ns (character) and value (numeric), with ns being the IDs of the grid to downscale to and all areas >= 0 and with sum(areas) >= sum(targets).}
 
-\item{times}{Vector of time steps where downscaling is done. The first time step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time values in targets.}
+\item{times}{a character Vector of time steps for which downscaling is done. The first time-step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time arguments in targets.}
 
-\item{xmat}{A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
+\item{xmat}{A dataframe containing the explanatory variables for the econometric priors with columns ns (character), ks (character) and value (numeric). Defaults to NULL.
 Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
 \code{lu.from} and \code{lu.to} in \code{targets}.}
 
-\item{betas}{A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value. Defaults to NULL.
+\item{betas}{A dataframe of coefficients with columns ks (character), lu.from (character, optional), lu.to (character) and value (numeric). Defaults to NULL.
 Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
 \code{lu.from} and \code{lu.to} in \code{targets}.}
 
@@ -38,16 +38,14 @@ Either \code{xmat} and \code{betas} or \code{priors} have to be provided for eac
 
 \item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
 
-\item{xmat.proj}{dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected}
+\item{xmat.proj}{dataframe with columns times (character), ns (character), ks (character), value (numeric) must be present for each xmat.coltype specified as projected}
 
 \item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
 
-\item{priors}{A dataframe of priors with columns times (optional), ns, lu.from (optional), lu.to (with priors >= 0); An optional
-column \code{weight} can be supplied. This has to be fully numeric with all values between
-0 and 1. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous
-priors in the downscaling.}
+\item{priors}{A dataframe with exogeneous priors containing the columns times (character, optional), ns (character), lu.from (character, optional), lu.to, (character) and value (numeric, with value >= 0); An optional
+column \code{weight} (numeric, 0 <= weight <= 1) can be supplied. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous priors in the downscaling.}
 
-\item{restrictions}{A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero}
+\item{restrictions}{A dataframe with columns ns (character), lu.from (character, optional), lu.to (character) and value (numeric). Values must be either zero or one. If restrictions are one, the MNL function is set to zero.}
 
 \item{options}{A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.}
 }
@@ -88,7 +86,7 @@ for (jj in unique(argentina_luc$lu.from)) {
 }
 ns = unique(argentina_df$lu_levels$ns)
 priors = data.frame(ns = as.character(ns),lu.from="Cropland",
-            lu.to="Forest",value = runif(length(ns)))
+            lu.to="Forest",value = as.numeric(runif(length(ns))))
 res1 = downscale(targets = argentina_FABLE \%>\% dplyr::filter(times == "2010"),
          start.areas = argentina_df$lu_levels,
          xmat = argentina_df$xmat,
