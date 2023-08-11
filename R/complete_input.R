@@ -29,6 +29,31 @@ complete_targets = function(targets) {
   return(targets)
 }
 
+#' Complete input targets for population downscaling
+#'
+#' @param targets Dataframe of targets, must have columns pop.type and value
+#'
+#' @return Completed dataframe with pop.type, times columns and all combinations
+#'
+#' Internal function. Adds missing columns and completes potential sparse dataframes.
+#' @keywords internal
+complete_targets_pop = function(targets) {
+  pop.type = ns = times = NULL
+  if (!tibble::has_name(targets,"times")) {
+    targets = cbind(times = PLCHOLD_T,targets)
+  } else {
+    if (any(targets$times == PLCHOLD_T)) stop(paste0("The times ",PLCHOLD_T," is reserved, use another label."))
+  }
+  # Add all combinations
+  targets = targets %>%
+    dplyr::right_join(targets %>%
+                        tidyr::expand(pop.type,times),
+                      by = c("times", "pop.type"))  %>%
+    tidyr::replace_na(list(value = 0))
+  targets = dplyr::arrange(targets,pop.type,times)
+  return(targets)
+}
+
 #' Complete input areas
 #'
 #' @param areas Dataframe of areas, must have columns ns and value
@@ -86,6 +111,24 @@ complete_betas = function(betas) {
     if (any(betas$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
   betas = dplyr::arrange(betas,.data$lu.from,.data$lu.to,.data$ks)
+  return(betas)
+}
+
+#' Complete input betas for population downscaling
+#'
+#' @param betas Dataframe of betas, must have columns ks, lu.from and lu.to and value
+#'
+#' @return Completed dataframe, with added lu.from
+#'
+#' Internal function. Adds missing columns and completes potential sparse dataframes.
+#' @keywords internal
+complete_betas_pop = function(betas) {
+  if (!tibble::has_name(betas,"pop.type")) {
+    betas = cbind(pop.type = PLCHOLD_POPT,betas)
+  } else {
+    if (any(betas$pop.type == PLCHOLD_POPT)) stop(paste0("The pop.type ",PLCHOLD_POPT," is reserved, use another name."))
+  }
+  betas = dplyr::arrange(betas,.data$pop.type,.data$ks)
   return(betas)
 }
 
@@ -215,9 +258,9 @@ complete_xmat.proj = function(xmat.proj) {
 #'
 #' Internal function. Checks if targets are fullfillable over time before downscaling.
 #' @keywords internal
-#' 
+#'
 target_area_check <- function(targets, areas){
-  
+
   temp_curr.lu_levels = temp_lu.from.targets = temp_lu.to.targets = lu.from = value = times = value_net = lu.to = value.lu.to = value.lu.from = . = NULL
 
   timesteps <- base::sort(base::unique(targets$times))

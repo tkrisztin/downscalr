@@ -95,4 +95,7 @@ res1 = downscale(targets = argentina_FABLE \%>\% dplyr::filter(times == "2010"),
          betas = betas \%>\% dplyr::filter(lu.from!="Cropland" | lu.to!="Forest"),
          priors = priors)
 
+ dgp1 = sim_luc(1000,tt = 3)
+ res1 = downscale(targets = dgp1$targets,start.area = dgp1$start.areas,
+        xmat = dgp1$xmat,betas = dgp1$betas,times = c(1:3))
 }

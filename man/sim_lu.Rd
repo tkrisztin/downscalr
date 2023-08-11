@@ -25,7 +25,8 @@ sim_lu(
 \item{k}{Number of covariates to simulate \eqn{k}. Defaults to one.}
 
 \item{areas}{Vector of dimensions \eqn{n \times 1}. Provides the spatial observation
-areas \eqn{a_i} for calculating targets \eqn{T_1,...,T_J}.}
+areas \eqn{a_i} for calculating targets \eqn{T_1,...,T_J}. Defaults to a
+random uniform matrix.}
 
 \item{alphas}{Matrix of dimensions \eqn{T \times J}. Provides the true values
 for all \eqn{\alpha_{jt}}. The \eqn{J}-th column of the matrix

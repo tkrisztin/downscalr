@@ -43,3 +43,32 @@ downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_
               err.txt = err.txt
   ))
 }
+
+
+#' Set options for population downscaling
+#'
+#' This function can be called to specify additional options to the downscalR solver.
+#' The user can change the solver function, specify solver behavior, and stopping conditions.
+#'
+#' @param solve_fun The name of the downscaling function to use. Has to be a
+#' valid R function. Defaults to \code{"solve_biascorr"}.
+#' @param MAX_EXP Numerical cutoff for MNL function.
+#' @param err.txt Error text for caller identification (used for debugging)
+#' @param max_diff If difference to targets is larger, redo the estimation (helps to avoid convergence errors)
+#'
+#' @return List with default options for bias correction solver
+#'
+#' @export downscale_control_pop
+#'
+#' @examples
+#' opts1 = downscale_control_pop()
+downscale_control_pop = function(solve_fun = "solve_biascorr",
+                                 MAX_EXP = log(.Machine$double.xmax),
+                                 max_diff = 1.0e-8,
+                             err.txt = "") {
+  return(list(solve_fun = solve_fun,
+              MAX_EXP = MAX_EXP,
+              max_diff = max_diff,
+              err.txt = err.txt
+  ))
+}

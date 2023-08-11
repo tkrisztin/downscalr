@@ -256,5 +256,102 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
 }
 
 
+#' Bias correction solver for Poisson type problems
+#'
+#' @param targets A dataframe with columns pop.type and value (all targets >= 0)
+#' @param xmat A dataframe of explanatory variables with columns ks and value.
+#' @param betas A dataframe of coefficients with columns ks, lu.from, lu.to & value
+#' @param options A list with solver options. Call \code{\link{downscale_control_pop}} for default options and for more detail.
+#'
+#' @details Given \code{J} targets matches  the projections from a Poisson-type model.
+#'
+#' You should not call this functions directly, call \code{\link{downscale_pop}} instead.
+#'
+#' Targets should be specified in a dataframe with  a pop.type and a value column.
+#' All targets must be larger or equal to zero.
+#'
+#' @return A list containing
+#' * \code{out.res} A \code{n x p} matrix of area allocations
+#' * \code{out.solver} A list of the solver output
+#'
+#' @export solve_biascorr.poisson
+#' @import nloptr
+#' @import tidyr
+#' @import dplyr
+#' @import tibble
+#'
+#' @examples
+#' ## A basic example
+solve_biascorr.poisson = function(targets,xmat,betas,
+                              options = downscale_control_pop()) {
+  pop.type <- unique(targets$pop.type)
+  ks = unique(betas$ks)
+  value = NULL
+
+  out.solver <- list()
+  curr.pop.type <- pop.type[1]
+  full.out.res = data.frame()
+  for(curr.pop.type in pop.type){
+    err.txt = paste0(curr.pop.type," ",options$err.txt)
+
+    # Extract targets
+    curr.targets = dplyr::filter(targets,pop.type == curr.pop.type)$value
+
+    # Extract betas
+    curr.betas = dplyr::filter(betas,pop.type == curr.pop.type) %>%
+      tibble::column_to_rownames(var = "ks") %>%
+      dplyr::select(value)
+    curr.betas = as.matrix(curr.betas)
+
+    # Extract xmat
+    ## IMPORTANT CHECK ORDER OF VARIABLES FIXED
+    curr.xmat = dplyr::filter(xmat,ks %in% row.names(curr.betas)) %>%
+      tidyr::pivot_wider(names_from = "ks",values_from = "value",id_cols = "ns")  %>%
+      tibble::column_to_rownames(var = "ns") %>%
+      dplyr::select(rownames(curr.betas))
+    curr.xmat = as.matrix(curr.xmat)
+
+    n = nrow(curr.xmat)
+    k = nrow(curr.betas)
+
+
+    if (ncol(curr.xmat)!=k || nrow(curr.xmat)!=n) {
+      stop(paste0(err.txt,"Dimensions of xmat, areas and betas do not match."))
+    }
+
+    # out.res contains downscaled estimates; priors.mu econometric & other priors for estimation
+    out.res = priors.mu = matrix(0,n,1)
+    colnames(out.res) = colnames(priors.mu) = names(curr.pop.type)
+    # match econometric priors
+    priors.mu = curr.xmat %*% curr.betas
+    # make sure the priors are numerically well behaved
+    priors.mu[priors.mu > options$MAX_EXP] = options$MAX_EXP
+    priors.mu[priors.mu < -options$MAX_EXP] = -options$MAX_EXP
+    priors.mu = exp(priors.mu)
+
+    res.x = list()
+    if (curr.targets == 0) {
+      #catch case if all targets are equal zero
+      res.x$par = -Inf
+      out.solver[[curr.pop.type]] = res.x
+      out.res = priors.mu * 0
+    } else {
+      res.x$par = log(curr.targets / sum(priors.mu))
+
+      out.res = exp(res.x$par) * priors.mu
+      out.solver[[curr.pop.type]] = res.x
+    }
+
+    # add residual own flows in output
+    res.agg = data.frame(ns = rownames(curr.xmat),
+                          pop.type = curr.pop.type, value = out.res)
+
+    # aggregate results over dataframes
+    full.out.res = bind_rows(full.out.res,res.agg)
+  }
+  return(list(out.res = full.out.res, out.solver = out.solver))
+}
+
+
 
 

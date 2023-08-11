@@ -1,6 +1,7 @@
 
 PLCHOLD_REGION = "NA_REGION"
 PLCHOLD_LU = "NA_LU"
+PLCHOLD_POPT = "NA_POPT"
 PLCHOLD_K = "NA_K"
 PLCHOLD_T = "NA_TIME"
 
@@ -157,3 +158,102 @@ err_check_inputs = function(targets,areas,xmat,betas,
   }
 }
 
+
+#' Error check inputs for population downscaling
+#'
+#' @param targets A dataframe with columns times, lu.from (optional), lu.to and value (all targets >= 0)
+#' @param xmat A dataframe of explanatory variables with columns ks and value
+#' @param betas A dataframe of coefficients with columns ks, lu.from (optional), lu.to & value
+#' @param xmat.coltypes A dataframce with columns ks and string value, can be either "static", "dynamic", or "projected"
+#' @param xmat.proj dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected
+#' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
+#' @param priors A dataframe of priors (if no \code{betas} were supplied) with columns ns, lu.from (optional), lu.to (with priors >= 0)
+#' @param restrictions A dataframe with columns ns, lu.from (optional), lu.to and value. Values must be zero or one. If restrictions are one, the MNL function is set to zero
+#'
+#' Internal function. Must throw errors, no return value if inputs do not match the specification. Handle all error checking here
+#' Use this for all error checking of inputs.
+#'
+#' @keywords internal
+err_check_inputs_pop = function(targets,xmat,betas,
+                            xmat.coltypes,
+                            xmat.proj,xmat.dyn.fun,err.txt) {
+  # check NA
+  if (any(is.na(targets)) ||
+      any(is.na(xmat)) ||
+      any(is.na(betas))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(xmat.coltypes) && any(is.na(xmat.coltypes))) {stop(paste0(err.txt,"Input contains NA values"))}
+  if (!is.null(xmat.proj) && any(is.na(xmat.proj))) {stop(paste0(err.txt,"Input contains NA values"))}
+
+  # check rows
+  if (nrow(targets) < 1) {stop(paste0(err.txt,"No observations in targets!"))}
+  if (nrow(xmat) < 1) {stop(paste0(err.txt,"No observations in xmat!"))}
+  if (nrow(betas) < 1) {stop(paste0(err.txt,"No observations in betas!"))}
+  if (!is.null(xmat.proj)) {
+    if (nrow(xmat.proj) < 1) {stop(paste0(err.txt,"No observations in xmat.proj!"))}
+  }
+  if (!is.null(xmat.coltypes)) {
+    if (nrow(xmat.coltypes) < 1) {stop(paste0(err.txt,"No observations in xmat.coltypes!"))}
+  }
+
+  # check correct names
+  check_names = all(tibble::has_name(targets, c("pop.type","times","value")))
+  if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in targets."))}
+  check_names = all(tibble::has_name(xmat, c("ks","ns","value")))
+  if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat"))}
+  check_names = all(tibble::has_name(betas, c("ks","pop.type","value")))
+  if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in betas"))}
+  if (!is.null(xmat.proj)) {
+    check_names = all(tibble::has_name(xmat.proj, c("ns","ks","times","value")))
+    if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
+  }
+  if (!is.null(xmat.coltypes)) {
+    check_names = all(tibble::has_name(xmat.coltypes, c("ks","value")))
+    if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
+  }
+
+  # check values
+  if (!all(targets$value >=0)) {
+    targets$value[targets$value<0] = 0
+    stop(paste0(err.txt,"Negative targets!"))
+  }
+  # check if all targets are covered as either betas or priors
+  chck.names = targets  %>% dplyr::left_join(
+    betas %>% dplyr::group_by(.data$pop.type) %>%
+      dplyr::summarize(n = n(),.groups = "keep"),by = c("pop.type"))
+  chck.names$n[is.na(chck.names$n)] = 0
+  if (any(chck.names$n == 0)) {
+    name1 = chck.names %>% dplyr::filter(chck.names$n == 0)
+    stop(paste0(err.txt,"Missing betas for targets: ",name1$pop.type[1],"!"))
+  }
+  # check xmat.coltypes
+  if (!all(xmat.coltypes$value %in% c("static","dynamic","projected"))) {
+    stop(paste0(err.txt,"All xmat.coltypes values must be either static,dynamic, or projected"))}
+  # for projected columns, make sure xmat.proj is supplied
+  if (any(xmat.coltypes$value == "projected")) {
+    if (is.null(xmat.proj)) {stop(paste0(err.txt,"Columns are specified as projected, but xmat.proj missing."))}
+    chck.xmat = expand.grid(times = unique(targets$times),
+                            ks = dplyr::filter(xmat.coltypes,.data$value == "projected")$ks) %>%
+      left_join(
+        xmat.proj %>% dplyr::group_by(.data$times,.data$ks) %>% dplyr::summarize(n = n(),.groups = "keep"),by = c("times", "ks")
+      )
+    if (any(is.na(chck.xmat$n))) {stop(paste0(err.txt,"xmat.proj must provide values for all times and projected ks."))}
+  }
+  if (any(xmat.coltypes$value == "dynamic") && is.null(xmat.dyn.fun)) {
+    stop(paste0(err.txt,"Dynamic columns specified but missing xmat.dyn.fun for update."))}
+
+  # check completeness
+  # betas: Check if we have all ks
+  ks = unique(xmat$ks)
+  if (!all(ks %in% betas$ks)) {stop(paste0(err.txt,"Missing variables in betas (reference xmat)!"))}
+  # xmat: Check if we have all combinations
+  expanded = xmat %>% tidyr::expand(.data$ks,.data$ns)
+  if (nrow(expanded) != nrow(xmat)) {stop(paste0(err.txt,"Missing variables for pixels."))}
+  if (!is.null(xmat.proj)) {
+    # xmat.proj: Check if we have all ns
+    ns = unique(xmat$ns)
+    if (!all(ns %in% xmat.proj$ns)) {stop(paste0(err.txt,"Missing pixels in xmat.proj (reference areas)!"))}
+    # xmat.proj: Check if we have all combinations
+    expanded = length(unique(xmat.proj$ks)) * length(unique(xmat.proj$times)) * length(ns)
+    if (expanded != nrow(xmat.proj)) {stop(paste0(err.txt,"Missing variable/ns/times combination in xmat.proj."))}
+  }
+}
