@@ -207,11 +207,19 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
                    xtol_abs = options$xtol_abs,
                    maxeval = options$maxeval
       )
+      # check if the optimiser uses gradient or not
+      if (grepl("_LD_",opts$algorithm)) {
+        eval_grad_f = grad_sqr_diff.mnl
+      } else {
+        eval_grad_f = NULL
+      }
       redo = TRUE; countr = 1;
       while (redo) {
-        res.x = nloptr::nloptr(x0,sqr_diff.mnl,
-                               lb = rep(exp(-options$MAX_EXP),length(x0)),
-                               ub = rep(exp(options$MAX_EXP),length(x0)),
+        res.x = nloptr::nloptr(x0 = x0,
+                               eval_f = sqr_diff.mnl,
+                               eval_grad_f = eval_grad_f,
+                               lb = rep(-options$MAX_EXP,length(x0)),
+                               ub = rep(options$MAX_EXP,length(x0)),
                                opts=opts,
                                mu = priors.mu,areas = curr.areas,targets = curr.targets,
                                restrictions = restr.mat,cutoff = options$cutoff)

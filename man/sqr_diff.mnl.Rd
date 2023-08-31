@@ -4,7 +4,7 @@
 \alias{sqr_diff.mnl}
 \title{Squared differences optimization function with multinomial logit}
 \usage{
-sqr_diff.mnl(x, mu, areas, targets, restrictions, cutoff = 0)
+sqr_diff.mnl(x, mu, areas, targets, restrictions = NULL, cutoff = 0)
 }
 \arguments{
 \item{x}{Bias correction parameters}
