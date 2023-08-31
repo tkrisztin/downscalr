@@ -11,11 +11,11 @@
 #' @keywords internal
 mu.mnl = function(x,mu,areas,restrictions = NULL,cutoff = 0) {
   mu = mu * matrix(x,nrow(mu),ncol(mu),byrow = TRUE)
-  mu = mu / rowSums(cbind(1,mu)) * areas
   if (!is.null(restrictions)) {
     mu[restrictions == 1] = 0
   }
   mu[mu<cutoff] = 0
+  mu = mu / rowSums(cbind(1,mu)) * areas
   return(mu)
 }
 
