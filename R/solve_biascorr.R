@@ -130,10 +130,6 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       if (any(curr.priors<0)) {stop(paste0(err.txt,"Priors must be strictly non-negative."))}
     } else {p2 = 0;p2_mixed = 0}
 
-    #commented by Michael Wögerer, led to problems with 0 targets in cropsys DS
-    #if (!p == p1 + p2) {stop(paste0(err.txt,"Dimensions of betas, targets and priors does not match."))}
-
-
     # check restrictions for consistency
     if (!is.null(curr.restrictions) & any(colnames(curr.restrictions) %in% names(curr.targets))) {
       restr.mat = matrix(0,n,p); colnames(restr.mat) = names(curr.targets)
@@ -156,16 +152,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     if (p2_mixed > 0) {
       w1 = curr.prior_weights[,mixed_priors,drop = FALSE]
       #re-scale exogeneous prior to priors.mu
-      eco.priors_min = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),min)
-      eco.priors_max = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),max)
+      eco.priors_sum = apply(priors.mu[,mixed_priors,drop = FALSE],c(2),sum)
       exo.priors = curr.priors[,mixed_priors,drop = FALSE]
-      exo.priors_min = apply(exo.priors, 2, min)
-      exo.priors_max = apply(exo.priors, 2, max)
+      exo.priors_sum = apply(exo.priors, 2, sum)
       exo.priors = t(
-        (t(exo.priors) - exo.priors_min) / (exo.priors_max - exo.priors_min) *
-          (eco.priors_max - eco.priors_min) + eco.priors_min
-      )
-      exo.priors[is.na(exo.priors)] = 0
+        (t(exo.priors) / exo.priors_sum) * eco.priors_sum   )
       priors.mu[,mixed_priors] = as.matrix((1-w1)*priors.mu[,mixed_priors] + w1*exo.priors)
     }
     # BUGFIX: if priors.mu[,colnames(curr.betas)] are numerically very small and
@@ -190,14 +181,6 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         curr.targets = curr.targets[not.zero]
         priors.mu = priors.mu[,not.zero,drop = FALSE]
         if (!is.null(curr.restrictions)) {restr.mat = restr.mat[,not.zero,drop = FALSE]}
-      }
-
-      # BUGFIX: if any priors.mu close to zero optimisation might break
-      #   down. Rebalance to between 0 and 1.
-      if (any(apply(priors.mu, c(2),max) < 10^-8)) {
-        p.min = apply(priors.mu,c(2),min)
-        p.max = apply(priors.mu,c(2),max)
-        priors.mu = t( (t(priors.mu) - p.min) / (p.max - p.min))
       }
 
       #proceed with bias correction

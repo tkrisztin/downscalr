@@ -18,7 +18,7 @@ downscale_pop(
 \arguments{
 \item{targets}{A dataframe with columns times, pop.type (optional), and value (all targets >= 0)}
 
-\item{times}{Vector of time steps where downscaling is done. The first time step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time values in targets.}
+\item{times}{a character Vector of time steps for which downscaling is done. The first time-step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time arguments in targets.}
 
 \item{xmat}{A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
 \code{xmat} and \code{betas} have to be provided for each
@@ -30,7 +30,7 @@ downscale_pop(
 
 \item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
 
-\item{xmat.proj}{dataframe with columns times, ns, ks, must be present for each xmat.coltype specified as projected}
+\item{xmat.proj}{dataframe with columns times (character), ns (character), ks (character), value (numeric) must be present for each xmat.coltype specified as projected}
 
 \item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
 
