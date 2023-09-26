@@ -18,6 +18,7 @@ complete_targets = function(targets) {
   } else {
     if (any(targets$times == PLCHOLD_T)) stop(paste0("The times ",PLCHOLD_T," is reserved, use another label."))
   }
+
   # Add all combinations
   targets = targets %>%
     dplyr::right_join(targets %>%
@@ -26,6 +27,10 @@ complete_targets = function(targets) {
     filter(as.character(.data$lu.from) != as.character(.data$lu.to)) %>%
     tidyr::replace_na(list(value = 0))
   targets = dplyr::arrange(targets,.data$lu.from,.data$lu.to,.data$times)
+
+  if(any(sapply(targets[,-which(names(targets)=="value")], class)!="factor") || !is.numeric(targets$value)) {warning(paste0("Column class has been changed in targets!"));
+    targets <- targets %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   return(targets)
 }
 
@@ -44,6 +49,7 @@ complete_targets_pop = function(targets) {
   } else {
     if (any(targets$times == PLCHOLD_T)) stop(paste0("The times ",PLCHOLD_T," is reserved, use another label."))
   }
+
   # Add all combinations
   targets = targets %>%
     dplyr::right_join(targets %>%
@@ -51,6 +57,11 @@ complete_targets_pop = function(targets) {
                       by = c("times", "pop.type"))  %>%
     tidyr::replace_na(list(value = 0))
   targets = dplyr::arrange(targets,pop.type,times)
+
+
+  if(any(sapply(targets[,-which(names(targets)=="value")], class)!="factor") || !is.numeric(targets$value)) {warning(paste0("Column class has been changed in targets!"));
+    targets <- targets %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   return(targets)
 }
 
@@ -68,6 +79,10 @@ complete_areas = function(areas) {
   } else {
     if (any(areas$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
+
+  if(any(sapply(areas[,-which(names(areas)=="value")], class)!="factor") || !is.numeric(areas$value)) {warning(paste0("Column class has been changed in start.areas!"));
+    areas <- areas %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   # Add all combinations
   areas = areas %>%
     dplyr::right_join(areas %>%
@@ -93,6 +108,9 @@ complete_xmat = function(xmat) {
     tidyr::replace_na(list(value = 0)) %>%
     dplyr::mutate(ns = as.character(.data$ns), ks = as.character(.data$ks))
 
+  if(any(sapply(xmat[,-which(names(xmat)=="value")], class)!="factor") || !is.numeric(xmat$value)) {warning(paste0("Column class has been changed in xmat!"));
+    xmat <- xmat %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   return(xmat)
 }
 
@@ -111,6 +129,10 @@ complete_betas = function(betas) {
     if (any(betas$lu.from == PLCHOLD_LU)) stop(paste0("The lu.from ",PLCHOLD_LU," is reserved, use another name."))
   }
   betas = dplyr::arrange(betas,.data$lu.from,.data$lu.to,.data$ks)
+
+  if(any(sapply(betas[,-which(names(betas)=="value")], class)!="factor") || !is.numeric(betas$value)) {warning(paste0("Column class has been changed in betas!"));
+    betas <- betas %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   return(betas)
 }
 
@@ -129,6 +151,10 @@ complete_betas_pop = function(betas) {
     if (any(betas$pop.type == PLCHOLD_POPT)) stop(paste0("The pop.type ",PLCHOLD_POPT," is reserved, use another name."))
   }
   betas = dplyr::arrange(betas,.data$pop.type,.data$ks)
+
+  if(any(sapply(betas[,-which(names(betas)=="value")], class)!="factor") || !is.numeric(betas$value)) {warning(paste0("Column class has been changed in betas!"));
+    betas <- betas %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+
   return(betas)
 }
 
@@ -173,6 +199,17 @@ complete_priors = function(priors,xmat,targets) {
     filter(lu.from != lu.to) %>%
     tidyr::replace_na(list(value = 0, weight = 0))
   priors = dplyr::arrange(priors,.data$lu.from,.data$lu.to,.data$ns)
+
+  if (!is.null(priors)) {
+    if (is.null(priors$weight)) {
+      if(any(sapply(priors[,-which(names(priors)=="value")], class)!="factor") || !is.numeric(priors$value)) {warning(paste0("Column class has been changed in priors!"));
+        priors <- priors %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+    } else {
+      if(any(sapply(priors[,-which(names(priors)%in%c("value","weight"))], class)!="factor") || !is.numeric(priors$value) || !is.numeric(priors$weight)) {warning(paste0("Column class has been changed in priors!"));
+        priors <- priors %>% dplyr::mutate_at(vars(-c("value","weight")), as.factor)}
+    }
+  }
+
   return(priors)
 }
 
@@ -201,6 +238,12 @@ complete_restrictions = function(restrictions,xmat) {
     ,by= c("ns", "lu.from", "lu.to")) %>%
     tidyr::replace_na(list(value = 0))
   restrictions = dplyr::arrange(restrictions,.data$lu.from,.data$lu.to,.data$ns)
+
+  if (!is.null(restrictions)) {
+    if(any(sapply(restrictions[,-which(names(restrictions)=="value")], class)!="factor") || !is.numeric(restrictions$value)) {warning(paste0("Column class has been changed in restrictions!"));
+      restrictions <- restrictions %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+  }
+
   return(restrictions)
 }
 
@@ -248,6 +291,12 @@ complete_xmat.proj = function(xmat.proj) {
     if (any(xmat.proj$times == PLCHOLD_T)) stop(paste0("The times ",PLCHOLD_T," is reserved, use another label."))
   }
   xmat.proj = dplyr::arrange(xmat.proj,.data$times,.data$ks,.data$ns)
+
+  if (!is.null(xmat.proj)) {
+    if(any(sapply(xmat.proj[,-which(names(xmat.proj)=="value")], class)!="factor") || !is.numeric(xmat.proj$value)) {warning(paste0("Column class has been changed in xmat.proj!"));
+      xmat.proj <- xmat.proj %>% dplyr::mutate_at(vars(-c("value")), as.factor)}
+  }
+
   return(xmat.proj)
 }
 

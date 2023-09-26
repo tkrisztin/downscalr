@@ -80,36 +80,6 @@ err_check_inputs = function(targets,areas,xmat,betas,
     if (!all(check_names)) {stop(paste0(err.txt,"Missing columns in xmat.proj"))}
   }
 
-  # check column classes
-  if(any(sapply(targets[,-which(names(targets)=="value")], class)!="factor") || !is.numeric(targets$value)) {warning(paste0(err.txt,"Column class has been changed in targets!"));
-    targets <- targets %>% mutate_at(vars(-c("value")), as.factor)}
-
-  if(any(sapply(areas[,-which(names(areas)=="value")], class)!="factor") || !is.numeric(areas$value)) {warning(paste0(err.txt,"Column class has been changed in start.areas!"));
-    areas <- areas %>% mutate_at(vars(-c("value")), as.factor)}
-  if(any(sapply(xmat[,-which(names(xmat)=="value")], class)!="factor") || !is.numeric(xmat$value)) {warning(paste0(err.txt,"Column class has been changed in xmat!"));
-    xmat <- xmat %>% mutate_at(vars(-c("value")), as.factor)}
-  if(any(sapply(betas[,-which(names(betas)=="value")], class)!="factor") || !is.numeric(betas$value)) {warning(paste0(err.txt,"Column class has been changed in betas!"));
-    betas <- betas %>% mutate_at(vars(-c("value")), as.factor)}
-
-  if (!is.null(priors)) {
-    if (is.null(priors$weight)) {
-      if(any(sapply(priors[,-which(names(priors)=="value")], class)!="factor") || !is.numeric(priors$value)) {warning(paste0(err.txt,"Column class has been changed in priors!"));
-        priors <- priors %>% mutate_at(vars(-c("value")), as.factor)}
-    } else {
-     if(any(sapply(priors[,-which(names(priors)%in%c("value","weight"))], class)!="factor") || !is.numeric(priors$value) || !is.numeric(priors$weight)) {warning(paste0(err.txt,"Column class has been changed in priors!"));
-       priors <- priors %>% mutate_at(vars(-c("value","weight")), as.factor)}
-    }
-  }
-  if (!is.null(restrictions)) {
-    if(any(sapply(restrictions[,-which(names(restrictions)=="value")], class)!="factor") || !is.numeric(restrictions$value)) {warning(paste0(err.txt,"Column class has been changed in restrictions!"));
-      restrictions <- restrictions %>% mutate_at(vars(-c("value")), as.factor)}
-  }
-  if (!is.null(xmat.proj)) {
-    if(any(sapply(xmat.proj[,-which(names(xmat.proj)=="value")], class)!="factor") || !is.numeric(xmat.proj$value)) {warning(paste0(err.txt,"Column class has been changed in xmat.proj!"));
-      xmat.proj <- xmat.proj %>% mutate_at(vars(-c("value")), as.factor)}
-  }
-
-
   # check values
   if (!all(targets$value >=0)) {
     targets$value[targets$value<0] = 0
