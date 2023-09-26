@@ -10,7 +10,7 @@
 #'
 #' @keywords internal
 mu.mnl = function(x,mu,areas,restrictions = NULL,cutoff = 0) {
-  mu = mu * matrix(exp(x),nrow(mu),ncol(mu),byrow = TRUE)
+  mu = mu * matrix(x,nrow(mu),ncol(mu),byrow = TRUE)
   if (!is.null(restrictions)) {
     mu[restrictions == 1] = 0
   }

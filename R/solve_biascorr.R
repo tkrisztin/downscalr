@@ -201,8 +201,8 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         res.x = nloptr::nloptr(x0 = x0,
                                eval_f = sqr_diff.mnl,
                                eval_grad_f = eval_grad_f,
-                               lb = rep(-options$MAX_EXP,length(x0)),
-                               ub = rep(options$MAX_EXP,length(x0)),
+                               lb = rep(exp(-options$MAX_EXP),length(x0)),
+                               ub = rep(exp(options$MAX_EXP),length(x0)),
                                opts=opts,
                                mu = priors.mu,areas = curr.areas,targets = curr.targets,
                                restrictions = restr.mat,cutoff = options$cutoff)
