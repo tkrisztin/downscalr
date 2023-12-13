@@ -3,8 +3,7 @@
 #' This function can be called to specify additional options to the downscalR solver.
 #' The user can change the solver function, specify solver behavior, and stopping conditions.
 #'
-#' @param solve_fun The name of the downscaling function to use. Has to be a
-#' valid R function. Defaults to \code{"solve_biascorr"}.
+#' @param solve_fun The name of the downscaling function to use. Has to either \code{"solve_biascorr"} or \code{"solve_notarget"}. Defaults to \code{"solve_biascorr"}.
 #' @param algorithm Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).
 #' @param xtol_rel Relative tolerance of solver.
 #' @param xtol_abs Absolute solver tolerance.
@@ -36,7 +35,7 @@ downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_
                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
                                   redo = 2,max_diff = 1.0e-8,ref_class_adjust_threshold = 1.0e-8,
                              err.txt = "") {
-  if (!solve_fun %in% c("solve_biascorr")) {stop("solve_fun not correctly specified.")}
+  if (!solve_fun %in% c("solve_biascorr","solve_notarget")) {stop("solve_fun not correctly specified.")}
   return(list(solve_fun = solve_fun,algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
               maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,redo = redo,
               max_diff = max_diff,ref_class_adjust_threshold=ref_class_adjust_threshold,

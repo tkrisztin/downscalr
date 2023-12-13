@@ -19,8 +19,7 @@ downscale_control(
 )
 }
 \arguments{
-\item{solve_fun}{The name of the downscaling function to use. Has to be a
-valid R function. Defaults to \code{"solve_biascorr"}.}
+\item{solve_fun}{The name of the downscaling function to use. Has to either \code{"solve_biascorr"} or \code{"solve_notarget"}. Defaults to \code{"solve_biascorr"}.}
 
 \item{algorithm}{Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).}
 

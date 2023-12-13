@@ -173,6 +173,18 @@ downscale = function(targets,
         options = curr.options
       )
       out.solver[[as.character(curr.time)]] = res$out.solver
+    } else if (options$solve_fun == "solve_notarget") {
+      curr.options = options
+      curr.options$err.txt = paste0(curr.time, " ", curr.options$err.txt)
+      res = solve_notarget.mnl(
+        targets = curr.targets,
+        areas = curr.areas,
+        xmat = curr.xmat,
+        betas = betas,
+        restrictions = curr.restrictions,
+        options = curr.options
+      )
+      out.solver[[as.character(curr.time)]] = res$out.solver
     }
 
     # add not covered land-uses (because no targets exist)
