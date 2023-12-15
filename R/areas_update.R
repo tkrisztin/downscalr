@@ -29,7 +29,7 @@ areas.sum_to = function(res, curr.areas, priors, xmat, xmat.proj) {
 #' @param xmat.proj Projected x matrix
 #'
 #' @return curr.areas A
-#' @export areas.sum_to
+#' @export areas.identity
 areas.identity = function(res, curr.areas, priors, xmat, xmat.proj) {
   curr.areas = res$out.res
   # correct for small numerical mistakes
