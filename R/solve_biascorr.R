@@ -163,11 +163,11 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     #   reference class targets is close to zero, we need to add areas for numerical
     #   stability
     adjusted_areas_own_flow = FALSE
-    if ( sum(curr.targets) > 0 &&
-      ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < options$ref_class_adjust_threshold){
-      # adjusted_areas_own_flow = TRUE
-      # curr.areas[curr.areas > 0] = curr.areas[curr.areas > 0] + 1
-    }
+    # if ( sum(curr.targets) > 0 &&
+    #   ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < options$ref_class_adjust_threshold){
+    #   # adjusted_areas_own_flow = TRUE
+    #   # curr.areas[curr.areas > 0] = curr.areas[curr.areas > 0] + 1
+    # }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
     if (all(curr.targets == 0)) {
