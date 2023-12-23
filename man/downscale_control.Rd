@@ -2,7 +2,7 @@
 % Please edit documentation in R/downscale_control.R
 \name{downscale_control}
 \alias{downscale_control}
-\title{Set options for downscaling}
+\title{Set Options for Downscaling Solver}
 \usage{
 downscale_control(
   solve_fun = "solve_biascorr",
@@ -19,44 +19,43 @@ downscale_control(
 )
 }
 \arguments{
-\item{solve_fun}{The name of the downscaling function to use. Has to either \code{"solve_biascorr"} or \code{"solve_notarget"}. Defaults to \code{"solve_biascorr"}.}
+\item{solve_fun}{The downscaling function to use. Valid options are "\code{solve_biascorr}" for bias correction and "\code{solve_notarget}" for non-targeted downscaling. Defaults to "\code{solve_biascorr}".}
 
-\item{algorithm}{Solver algorithm (see the \code{\link[nloptr]{nloptr}} package for documentation and more detail).}
+\item{algorithm}{Specifies the solver algorithm. The default algorithm is "\code{NLOPT_LN_SBPLX}". For more information on available algorithms, refer to the \code{\link[nloptr]{nloptr}} package.}
 
-\item{xtol_rel}{Relative tolerance of solver.}
+\item{xtol_rel}{The relative tolerance level of the solver, controlling solution precision in relative terms. Default is \code{1.0e-20}, where a lower value indicates higher precision.}
 
-\item{xtol_abs}{Absolute solver tolerance.}
+\item{xtol_abs}{The absolute tolerance level of the solver, specifying solution precision in absolute terms. Default is \code{1.0e-20}, with a lower value indicating higher precision.}
 
-\item{maxeval}{Maximum evaluation of solver.}
+\item{maxeval}{The maximum number of evaluations the solver will perform, limiting computational effort. Default is \code{1600}.}
 
-\item{MAX_EXP}{Numerical cutoff for MNL function.}
+\item{MAX_EXP}{Sets the numerical cutoff to prevent extremely high values in the Multinomial Logit (MNL) function. Default is \code{log(.Machine$double.xmax)}.}
 
-\item{cutoff}{Optional cutoff to avoid MNL values close to zero.}
+\item{cutoff}{An optional cutoff in the share of a pixel to avoid MNL values close to zero. Default is \code{0}.}
 
-\item{redo}{Maximum number of repeats}
+\item{redo}{The maximum number of estimation repeats to correct for potential convergence errors. Default is \code{2}.}
 
-\item{max_diff}{If difference to targets is larger, redo the estimation (helps to avoid convergence errors)}
+\item{max_diff}{The threshold for acceptable difference to targets. If exceeded, the estimation is redone. Default is \code{1.0e-8}.}
 
-\item{ref_class_adjust_threshold}{IF the share of the implied target for the multinomial logit
-reference class is smaller than this threshold, assitional areas will be artificially created
-(and automatically removed after solve) for numerical stability. Default to \code{1.0e-8}.}
+\item{ref_class_adjust_threshold}{The threshold for adjusting the reference class in the MNL. If the implied target share for the reference class is below this, additional areas are created for numerical stability and removed after solving. Default is \code{1.0e-8}.}
 
-\item{err.txt}{Error text for caller identification (used for debugging)}
+\item{err.txt}{An optional error message for debugging purposes. Empty by default.}
 }
 \value{
-List with default options for bias correction solver
+Returns a list with the specified options for the downscaling solver.
 }
 \description{
-This function can be called to specify additional options to the downscalR solver.
-The user can change the solver function, specify solver behavior, and stopping conditions.
+This function configures the downscalR solver with customizable options. It allows the selection of the solver function and adjustment of solver behavior and stopping conditions, tailored for specific downscaling needs.
 }
 \details{
-A user specified solve_fun function has to be able to process the following input parameters:
-\code{targets}, \code{areas}, \code{xmat}, \code{betas}, \code{priors}, \code{restrictions}, and
-\code{options} (the output of this function). The output should be a list containing two parameters:
-a dataframe \code{out.res} containing the downscaled output and a list \code{out.solver} detailing
-the solver results.
+The function returns a list of parameters to be used by the solver. It is essential to provide compatible parameters to ensure accurate downscaling results. The function will stop with an error message if \code{solve_fun} is not correctly specified.
 }
 \examples{
-opts1 = downscale_control()
+# Default settings
+opts_default = downscale_control()
+
+# Custom settings
+opts_custom = downscale_control(algorithm = "some_other_algorithm",
+                                xtol_rel = 1e-5, xtol_abs = 1e-5,
+                                maxeval = 2000, redo = 3)
 }
