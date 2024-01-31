@@ -219,10 +219,11 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       if(verbose){
         print(slct)
         print(temp_map)
+        print(start_temp)
       }
+
       start_temp <- c(1,1,c,t)
       count_temp <- c(ncol(temp_data),nrow(temp_data), rep(1,length(start_temp)-2))
-      print(start_temp)
       ncdf4::ncvar_put(ncid_out, nc_var_temp, t(temp_data), start=start_temp,
                        count=count_temp)
 
