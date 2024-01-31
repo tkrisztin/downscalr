@@ -209,18 +209,16 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       t <- NULL ; #data_dim <- #c(rep(letters, )
 
 
-      slct <-  colnames(nc_plot_temp)[ii+1]
+      slct <- colnames(nc_plot_temp)[ii+1]
       if(!any(is.na(variables[[pp]]$timen), is.null(variables[[pp]]$timen))) t <- which(time==time[sapply(time,grepl,slct)]) else t <- NULL
       print(slct)
-      c <- which(label_name_list[[pp]][[1]] %in% label_name_list[[pp]][[1]][sapply(label_name_list[[pp]][[1]],grepl,fixed=TRUE,slct)])
-      if(length(c)>1) c <- c[2]
-      if(length(variables[[pp]]$varn)>1) d <- which(label_name_list[[pp]][[2]]==label_name_list[[pp]][[2]][sapply(label_name_list[[pp]][[2]],grepl,fixed=TRUE,slct)])  else d <-  NULL
+      c <- unlist(lapply(label_name_list[[pp]],function(x){which(x==x[grepl(x,slct)])}))
       temp_map <- terra::setValues(geosims,nc_plot_list[[pp]][,slct])
 
       temp_data <- as.matrix(temp_map, wide=TRUE)
       #data <- as.matrix(temp_map)
       print(temp_map)
-      start_temp <- c(1,1,c,d,t)
+      start_temp <- c(1,1,c,t)
       count_temp <- c(ncol(temp_data),nrow(temp_data), rep(1,length(start_temp)-2))
       print(start_temp)
       ncdf4::ncvar_put(ncid_out, nc_var_temp, t(temp_data), start=start_temp,
