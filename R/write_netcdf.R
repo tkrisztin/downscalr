@@ -1,5 +1,5 @@
 #' Function to write results from downscalr or other sources into netCDF file format
-#' 
+#'
 #'
 #' @param data If not provided in \code{variables}, either a dataframe or matrix object with columns ns (raster cell numbers), times (optional), var1 (variable levels), and value; defaults to NULL
 #' @param rasterfile Raster grid object with ns as cell values
@@ -47,7 +47,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   times <- ns <- lu.to <- value <- var1 <-  NULL
 
   #input check
-  
+
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
   if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
   if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
@@ -58,16 +58,16 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
   if(is.matrix(data) | is.data.frame(data) | !is.null(data)){
     filepath <- paste0(getwd())
-    
+
     if (is.matrix(data)) data <- as.data.frame(data)
-    
-    res <- data %>% dplyr::select(times,ns,starts_with("var"),value) %>% group_by(ns,across(starts_with("var")),times) %>% summarize(value=sum(value)) %>% ungroup()
+
+    res <- data %>% dplyr::select(any_of(c("times","ns","value")),starts_with("var")) %>% group_by(ns,across(starts_with("var")),times) %>% summarize(value=sum(value)) %>% ungroup()
 
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
     data_layer$varn <- length(unique(res$var1))
     data_layer$data.dim <- length(grep("var",colnames(res)))
-    
+
     if(any(colnames(res) %in% "times")) data_layer$timen <- length(unique(res$times))
 
     variables <- list(data_layer)
@@ -89,7 +89,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   # Define some straightforward dimensions
   lon <- seq(geosims_extent[1]+(terra::res(geosims)[2]/2),geosims_extent[2]-(terra::res(geosims)[2]/2),length.out=dim(geosims)[2])
   lat <- seq(geosims_extent[4]-(terra::res(geosims)[1]/2),geosims_extent[3]+(terra::res(geosims)[1]/2),length.out=dim(geosims)[1])
-  
+
   time <- sort(seq.int(start.time,end.time,by.time))
 
   dim_lon <- ncdf4::ncdim_def("longitude", "degrees_east",lon,longname=NULL)
@@ -102,7 +102,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   nc_plot_list <- list()
   label_name_list <- list()
   label_num_list <- list()
-  
+
   for(ll in seq_len(length(variables))){
 
 
@@ -184,9 +184,9 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     label_name_list[[ll]] <- label_names_temp_list
     label_num_list[[ll]] <- label_num_temp
   }
-  
+
   ncid_out <- ncdf4::nc_create(paste0(filepath,"/",filename),nc_var_list,force_v4=TRUE)
-  
+
   ### add attributes
 
   for(pp in seq_len(length(nc_var_list))){
