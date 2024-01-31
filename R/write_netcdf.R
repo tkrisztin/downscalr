@@ -49,8 +49,10 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   #input check
 
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
-  if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
-  if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
+  if(colnames(data) %in% times){
+    if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
+    if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
+  }
   if(is.null(by.time)) by.time <- 10
   if(is.null(filename)) filename <- "Downscale_netCDF.nc"
   if(is.null(filepath)) filepath <- paste0(getwd())
@@ -61,7 +63,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
     if (is.matrix(data)) data <- as.data.frame(data)
 
-    res <- data %>% dplyr::select(any_of(c("times","ns","value")),starts_with("var")) %>% group_by(ns,across(starts_with("var")),times) %>% summarize(value=sum(value)) %>% ungroup()
+    res <- data %>% dplyr::select(any_of(c("times","ns","value")),starts_with("var")) %>%     group_by(ns,across(starts_with("var")),times) %>% summarize(value=sum(value)) %>% ungroup()
 
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
@@ -81,7 +83,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   na_sum <- function(x) {return(sum(x[!is.na(x)]))}
   if(as.character(class(rasterfile))!="SpatRaster") geosims <- terra::rast(rasterfile) else geosims <- rasterfile
   #sp::proj4string(geosims) <- p4s
-  geosims <- terra::project(geosims,p4s)
+  if(p4s!="") geosims <- terra::project(geosims,p4s)
   save_geovals <- data.frame(terra::values(geosims))
   colnames(save_geovals) <- "ns"
   geosims_extent <- terra::ext(geosims)
@@ -142,9 +144,9 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       dim_temp_list[[kk+3]] <- dim_time
 
       temp_nc_var <- ncdf4::ncvar_def(name = layer_temp$name,
-                               longname = layer_temp$name_long,
-                               dim = dim_temp_list, units = layer_temp$units,
-                               missval=fillvalue,prec = "double", compression = 9)
+                                      longname = layer_temp$name_long,
+                                      dim = dim_temp_list, units = layer_temp$units,
+                                      missval=fillvalue,prec = "double", compression = 9)
 
 
     }else{
@@ -158,9 +160,9 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
       temp_nc_var <- ncdf4::ncvar_def(name = layer_temp$name,units = layer_temp$units,
-                               longname = layer_temp$name_long,
-                               dim = dim_temp_list,
-                               missval=fillvalue,prec = "double",compression = 9)
+                                      longname = layer_temp$name_long,
+                                      dim = dim_temp_list,
+                                      missval=fillvalue,prec = "double",compression = 9)
 
 
 
@@ -215,7 +217,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       count_temp <- c(ncol(temp_data),nrow(temp_data), rep(1,length(start_temp)-2))
       print(start_temp)
       ncdf4::ncvar_put(ncid_out, nc_var_temp, t(temp_data), start=start_temp,
-                count=count_temp)
+                       count=count_temp)
 
       #print(step)
 
