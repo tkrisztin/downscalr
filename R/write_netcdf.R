@@ -21,7 +21,7 @@
 #' @param by.time Integer specifying interval of time steps to be written between \code{start.time} and \code{end.time}; defaults to 10
 #' @param filename Character string of netCDF file name, has to include ".nc" extension; defaults to filename="Downscale_netCDF.nc"
 #' @param filepath Character string to specify file path netCDF is written to, defaults to current working directory
-#'
+#' @param verbose Either TRUE or FALSE, prints each layer written into the netCDF file (for troubleshooting purposes); defaults to FALSE
 #' @return
 #' * Outputs \file{netCDF} file with \code{filename} written into \code{filepath} as specified in function arguments
 #'
@@ -42,7 +42,7 @@
 # units <- "km2"
 # filename <- "./testMW.nc"
 #
-write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="This is long name", name="this_is_standard_name", units="unit_of_measurement", dimname="dim_name", dimn=3, varn=NULL, timen=NULL, datadim=1, expandValue=0, data=NULL, vardescr=NULL, create.dimvar=TRUE), start.time=NULL, end.time=NULL, by.time=10, filename = NULL, filepath=NULL){
+write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="This is long name", name="this_is_standard_name", units="unit_of_measurement", dimname="dim_name", dimn=3, varn=NULL, timen=NULL, datadim=1, expandValue=0, data=NULL, vardescr=NULL, create.dimvar=TRUE), start.time=NULL, end.time=NULL, by.time=10, filename = NULL, filepath=NULL, verbose=FALSE){
 
   times <- ns <- lu.to <- value <- var1 <-  NULL
 
@@ -211,13 +211,15 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
       slct <- colnames(nc_plot_temp)[ii+1]
       if(!any(is.na(variables[[pp]]$timen), is.null(variables[[pp]]$timen))) t <- which(time==time[sapply(time,grepl,slct)]) else t <- NULL
-      print(slct)
       c <- unlist(lapply(label_name_list[[pp]],function(x){which(x==x[sapply(x,function(z) {grepl(z,slct)})])}))
       temp_map <- terra::setValues(geosims,nc_plot_list[[pp]][,slct])
 
       temp_data <- as.matrix(temp_map, wide=TRUE)
       #data <- as.matrix(temp_map)
-      print(temp_map)
+      if(verbose){
+        print(slct)
+        print(temp_map)
+      }
       start_temp <- c(1,1,c,t)
       count_temp <- c(ncol(temp_data),nrow(temp_data), rep(1,length(start_temp)-2))
       print(start_temp)
