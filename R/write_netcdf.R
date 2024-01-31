@@ -92,11 +92,18 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   lon <- seq(geosims_extent[1]+(terra::res(geosims)[2]/2),geosims_extent[2]-(terra::res(geosims)[2]/2),length.out=dim(geosims)[2])
   lat <- seq(geosims_extent[4]-(terra::res(geosims)[1]/2),geosims_extent[3]+(terra::res(geosims)[1]/2),length.out=dim(geosims)[1])
 
-  time <- sort(seq.int(start.time,end.time,by.time))
+  if(!is.null(start.time) & !is.null(end.time)){
+
+    time <- sort(seq.int(start.time,end.time,by.time))
+    dim_time <- ncdf4::ncdim_def("time", "years", calendar="standard",time,unlim=TRUE,longname=NULL)
+
+                                        }
+
 
   dim_lon <- ncdf4::ncdim_def("longitude", "degrees_east",lon,longname=NULL)
   dim_lat <- ncdf4::ncdim_def("latitude", "degrees_north",lat,longname=NULL)
-  dim_time <- ncdf4::ncdim_def("time", "years", calendar="standard",time,unlim=TRUE,longname=NULL)
+
+
 
 
   fillvalue <- NA
