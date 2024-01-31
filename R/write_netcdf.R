@@ -210,7 +210,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
       slct <-  colnames(nc_plot_temp)[ii+1]
-      if(!(is.na(variables[[pp]]$timen) | is.na(variables[[pp]]$timen))) t <- which(time==time[sapply(time,grepl,slct)]) else t <- NULL
+      if(!any(is.na(variables[[pp]]$timen), is.null(variables[[pp]]$timen))) t <- which(time==time[sapply(time,grepl,slct)]) else t <- NULL
       print(slct)
       c <- which(label_name_list[[pp]][[1]] %in% label_name_list[[pp]][[1]][sapply(label_name_list[[pp]][[1]],grepl,fixed=TRUE,slct)])
       if(length(c)>1) c <- c[2]
