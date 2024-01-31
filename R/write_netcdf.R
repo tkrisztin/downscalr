@@ -212,7 +212,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       slct <- colnames(nc_plot_temp)[ii+1]
       if(!any(is.na(variables[[pp]]$timen), is.null(variables[[pp]]$timen))) t <- which(time==time[sapply(time,grepl,slct)]) else t <- NULL
       print(slct)
-      c <- unlist(lapply(label_name_list[[pp]],function(x){which(x==x[grepl(x,slct)])}))
+      c <- unlist(lapply(label_name_list[[pp]],function(x){which(x==x[sapply(x,function(z) {grepl(z,slct)})])}))
       temp_map <- terra::setValues(geosims,nc_plot_list[[pp]][,slct])
 
       temp_data <- as.matrix(temp_map, wide=TRUE)
@@ -225,7 +225,6 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
                        count=count_temp)
 
       #print(step)
-
 
       #print(step)
     }
