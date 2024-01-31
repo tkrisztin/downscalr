@@ -135,7 +135,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     #   }
 
 
-    if(!is.na(layer_temp$timen) | !is.null(layer_temp$timen)){
+    if(!any(is.na(layer_temp$timen),is.null(layer_temp$timen))){
 
       if(is.null(start.time)) start.time <- min(layer_temp$timen)
       if(is.null(end.time)) end.time <- max(layer_temp$timen)
