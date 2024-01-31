@@ -49,6 +49,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   #input check
 
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
+  if(is.null(data)) stop(paste0("No data provided!"))
   if(any(colnames(data) %in% c("times"))){
     if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
     if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
@@ -58,7 +59,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   if(is.null(filepath)) filepath <- paste0(getwd())
 
 
-  if(is.matrix(data) | is.data.frame(data) | !is.null(data)){
+  if(any(is.matrix(data), is.data.frame(data), !is.null(data))){
     filepath <- paste0(getwd())
 
     if (is.matrix(data)) data <- as.data.frame(data)
