@@ -49,7 +49,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   #input check
 
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
-  if(colnames(data) %in% c("times")){
+  if(any(colnames(data) %in% c("times"))){
     if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
     if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
   }
