@@ -82,11 +82,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
     variables <- list(data_layer)
 
-  }else{
-
-
   }
-
   on.exit(ncdf4::nc_close(ncid_out))
 
 
@@ -136,6 +132,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
       label_names_temp <- gsub("[.]"," ",unique(layer_temp$data[,paste0('var',kk)]))
       label_num_temp <- seq(1,length(label_names_temp),1)
 
+      if(is.null(layer_tem$create.dimvar)) layer_temp$create.dimvar <- FALSE
       if(layer_temp$create.dimvar) dim_temp <- ncdf4::ncdim_def(paste0(layer_temp$dimname[kk],"_legend"),paste(paste(paste0(seq(1,length(label_names_temp),1)," = ",label_names_temp), collapse="; ")), label_num_temp, longname=NULL,create_dimvar=layer_temp$create.dimvar) else dim_temp <- ncdf4::ncdim_def(paste0(layer_temp$dimname[kk],"_legend"),"", as.integer(label_num_temp), longname=NULL,create_dimvar=FALSE)
 
       dim_temp_list[[kk+2]] <- dim_temp
