@@ -67,8 +67,8 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
     if(all(sapply(variables,is.list))){
 
-      if(is.null(start.time)) start.time <- min(sapply(variables,function(x){x$data$times}), na.rm=TRUE)
-      if(is.null(end.time)) end.time <- max(sapply(variables,function(x){x$data$times}), na.rm=TRUE)
+      if(is.null(start.time)) start.time <- min(unlist(sapply(variables,function(x){x$data$times})), na.rm=TRUE)
+      if(is.null(end.time)) end.time <- max(unlist(sapply(variables,function(x){x$data$times})), na.rm=TRUE)
 
     }
 
