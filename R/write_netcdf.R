@@ -79,11 +79,11 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   if(is.null(filepath)) filepath <- paste0(getwd())
 
 
-  if(any(is.matrix(data), is.data.frame(data), !is.null(data), !is.null(variables$data))){
+  if(any(is.matrix(data), is.data.frame(data), !is.null(variables$data))){
     filepath <- paste0(getwd())
 
     if (is.matrix(data)) data <- as.data.frame(data)
-    if(is.list(variables)) data <- variables$data
+    if(is.data.frame(variables$data)) data <- variables$data
 
     res <- data %>% dplyr::select(any_of(c("times","ns","value")),starts_with("var")) %>%     group_by(ns,across(starts_with("var")),times) %>% summarize(value=sum(value)) %>% ungroup()
 
