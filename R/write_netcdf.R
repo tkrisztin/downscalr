@@ -9,10 +9,8 @@
 #' * \code{name_long} = character string specifying a long descriptive name; defaults to name_long="This is long name"
 #' * \code{name} = character string specifying the standard name, contains no white space and is case sensitive : defaults to name="this_is_standard_name"
 #' * \code{units} = character string specifying the unit of measure of data; defaults to units="unit_of_measurement"
-#' * \code{dimn} = integer specifying the number of dimensions; defaults to NULL
 #' * \code{varn} = integer specifying the number of levels of variable; defaults to NULL
 #' * \code{timen} = integer specifying the number of timesteps
-#' * \code{datadim} = integer specifying the dimension of data; defaults to 1
 #' * \code{expandValue} = numeric value or NA to fill in missing observations in \code{data}
 #' * \code{vardescr} = character string providing longer description of variable levels in data; defaults to NULL
 #' * \code{create.dimvar} = either TRUE or FALSE, defines if dimension variable of \code{data} should be created or not; defaults to TRUE
@@ -42,7 +40,7 @@
 # units <- "km2"
 # filename <- "./testMW.nc"
 #
-write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="This is long name", name="this_is_standard_name", units="unit_of_measurement", dimname="dim_name", dimn=3, varn=NULL, timen=NULL, datadim=1, expandValue=0, data=NULL, vardescr=NULL, create.dimvar=TRUE), start.time=NULL, end.time=NULL, by.time=10, filename = NULL, filepath=NULL, verbose=FALSE){
+write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="This is long name", name="this_is_standard_name", units="unit_of_measurement", dimname="dim_name", varn=NULL, timen=NULL, expandValue=0, data=NULL, vardescr=NULL, create.dimvar=TRUE), start.time=NULL, end.time=NULL, by.time=10, filename = NULL, filepath=NULL, verbose=FALSE){
 
   times <- ns <- lu.to <- value <- var1 <-  NULL
 
@@ -214,7 +212,7 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
     for (ii in 1:(ncol(nc_plot_temp)-1)) {
-      t <- NULL ; #data_dim <- #c(rep(letters, )
+      t <- NULL ;
 
 
       slct <- colnames(nc_plot_temp)[ii+1]
