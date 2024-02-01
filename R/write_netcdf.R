@@ -90,7 +90,6 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
     data_layer <- variables
     data_layer$data <- as.data.frame(res)
     data_layer$varn <- length(unique(res$var1))
-    data_layer$data.dim <- length(grep("var",colnames(res)))
 
     if(any(colnames(res) %in% "times")) data_layer$timen <- length(unique(res$times))
 
@@ -137,12 +136,12 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
 
     layer_temp <- variables[[ll]]
-    layer_temp$datadim <- length(grep("var", colnames(layer_temp$data)))
-    if(length(layer_temp$dimname)<layer_temp$datadim & layer_temp$dimname=="dim_name") layer_temp$dimname <- paste0(layer_temp$dimname,seq_len(layer_temp$datadim))
+    layer_temp$data.dim <- length(grep("var", colnames(layer_temp$data)))
+    if(any(length(layer_temp$dimname)<layer_temp$data.dim,layer_temp$dimname=="dim_name")) layer_temp$dimname <- paste0(layer_temp$dimname,seq_len(layer_temp$data.dim))
     dim_temp_list <- list(dim_lon,dim_lat)
     label_names_temp_list <- list()
 
-    for(kk in seq_len(layer_temp$datadim)){
+    for(kk in seq_len(layer_temp$data.dim)){
       label_names_temp <- gsub("[.]"," ",unique(layer_temp$data[,paste0('var',kk)]))
       label_num_temp <- seq(1,length(label_names_temp),1)
 
