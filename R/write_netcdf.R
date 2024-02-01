@@ -47,10 +47,15 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   times <- ns <- lu.to <- value <- var1 <-  NULL
 
   #input check
-
+  #check whether variables input is list of list
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
-  if(is.null(data)) stop(paste0("No data provided!"))
-  if(any(colnames(data) %in% c("times"))){
+
+  ifelse(all(sapply(variables,is.list)),
+         ifelse(any(sapply(variables,function(x){is.null(x$data)})),stop(paste0("No data provided in one variable!"))),
+         ifelse(is.null(data) & is.null(variables$data),stop(paste0("No data provided!")))
+  )
+
+   if(any(colnames(data) %in% c("times"))){
     if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
     if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
   }
