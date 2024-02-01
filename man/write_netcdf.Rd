@@ -8,13 +8,14 @@ write_netcdf(
   data = NULL,
   rasterfile = NULL,
   variables = list(name_long = "This is long name", name = "this_is_standard_name", units
-    = "unit_of_measurement", dimname = "dim_name", dimn = 3, varn = NULL, timen = NULL,
-    datadim = 1, expandValue = 0, data = NULL, vardescr = NULL, create.dimvar = TRUE),
+    = "unit_of_measurement", dimname = "dim_name", varn = NULL, timen = NULL, expandValue
+    = 0, data = NULL, vardescr = NULL, create.dimvar = TRUE),
   start.time = NULL,
   end.time = NULL,
   by.time = 10,
   filename = NULL,
-  filepath = NULL
+  filepath = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -28,10 +29,8 @@ write_netcdf(
 \item \code{name_long} = character string specifying a long descriptive name; defaults to name_long="This is long name"
 \item \code{name} = character string specifying the standard name, contains no white space and is case sensitive : defaults to name="this_is_standard_name"
 \item \code{units} = character string specifying the unit of measure of data; defaults to units="unit_of_measurement"
-\item \code{dimn} = integer specifying the number of dimensions; defaults to NULL
 \item \code{varn} = integer specifying the number of levels of variable; defaults to NULL
 \item \code{timen} = integer specifying the number of timesteps
-\item \code{datadim} = integer specifying the dimension of data; defaults to 1
 \item \code{expandValue} = numeric value or NA to fill in missing observations in \code{data}
 \item \code{vardescr} = character string providing longer description of variable levels in data; defaults to NULL
 \item \code{create.dimvar} = either TRUE or FALSE, defines if dimension variable of \code{data} should be created or not; defaults to TRUE
@@ -46,6 +45,8 @@ write_netcdf(
 \item{filename}{Character string of netCDF file name, has to include ".nc" extension; defaults to filename="Downscale_netCDF.nc"}
 
 \item{filepath}{Character string to specify file path netCDF is written to, defaults to current working directory}
+
+\item{verbose}{Either TRUE or FALSE, prints each layer written into the netCDF file (for troubleshooting purposes); defaults to FALSE}
 }
 \value{
 \itemize{
