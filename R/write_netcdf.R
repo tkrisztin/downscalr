@@ -52,8 +52,9 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
 
   ifelse(all(sapply(variables,is.list)),
          ifelse(any(sapply(variables,function(x){is.null(x$data)})),stop(paste0("No data provided in one variable!"))),
-         ifelse(is.null(data) & is.null(variables$data),stop(paste0("No data provided!")))
-  )
+         if(is.null(data) & is.null(variables$data)) stop(paste0("No data provided!"))
+         )
+
 
    if(any(colnames(data) %in% c("times"))){
     if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
