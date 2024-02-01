@@ -50,9 +50,9 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
   #check whether variables input is list of list
   if(is.null(rasterfile)) stop(paste0("No raster provided!"))
 
-  ifelse(all(sapply(variables,is.list)),
-         ifelse(any(sapply(variables,function(x){is.null(x$data)})),stop(paste0("No data provided in one variable!"))),
-         if(is.null(data) & is.null(variables$data)) stop(paste0("No data provided!"))
+  switch(all(sapply(variables,is.list)),
+         switch(any(sapply(variables,function(x){is.null(x$data)})),stop(paste0("No data provided in one variable!"))),
+         switch(is.null(data) | is.null(variables$data), stop(paste0("No data provided!")), NULL)
          )
 
 
