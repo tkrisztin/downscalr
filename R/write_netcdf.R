@@ -54,10 +54,23 @@ write_netcdf <- function(data=NULL, rasterfile=NULL, variables=list(name_long="T
          )
 
 
-   if(any(colnames(data) %in% c("times"))){
+   if(any(colnames(data) %in% c("times"),colnames(variables$data) %in% c("times")), all(sapply(variables, function(x){})){
+
     if(is.null(start.time) & !is.null(data)) start.time <- min(data$times)
     if(is.null(end.time) & !is.null(data)) end.time <- max(data$times)
-  }
+
+    if(is.null(start.time) & !is.null(variables$data)) start.time <- min(variables$data$times)
+    if(is.null(end.time) & !is.null(variables$data)) end.time <- max(variables$data$times)
+
+    if(all(sapply(variables,is.list))){
+
+      start.time <- min(sapply(variables,function(x){x$data$times}))
+      end.time <- max(sapply(variables,function(x){x$data$times}))
+
+    }
+
+   }
+
   if(is.null(by.time)) by.time <- 10
   if(is.null(filename)) filename <- "Downscale_netCDF.nc"
   if(is.null(filepath)) filepath <- paste0(getwd())
