@@ -159,15 +159,6 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         (t(exo.priors) / exo.priors_sum) * eco.priors_sum   )
       priors.mu[,mixed_priors] = as.matrix((1-w1)*priors.mu[,mixed_priors] + w1*exo.priors)
     }
-    # BUGFIX: if priors.mu[,colnames(curr.betas)] are numerically very small and
-    #   reference class targets is close to zero, we need to add areas for numerical
-    #   stability
-    adjusted_areas_own_flow = FALSE
-    # if ( sum(curr.targets) > 0 &&
-    #   ((sum(curr.areas) - sum(curr.targets)) / sum(curr.targets)) < options$ref_class_adjust_threshold){
-    #   # adjusted_areas_own_flow = TRUE
-    #   # curr.areas[curr.areas > 0] = curr.areas[curr.areas > 0] + 1
-    # }
     # remove targets that are all zero
     not.zero = (curr.targets != 0)
     if (all(curr.targets == 0)) {
@@ -229,12 +220,6 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
     res.agg <- out.res2 %>%
         pivot_longer(cols = -c("ns"),names_to = "lu.to") %>%
       bind_cols(lu.from = curr.lu.from)
-
-    # BUGFIX: we have adjusted the areas as there were no implied own flows
-    #   we cut these out ex-post
-    if ( adjusted_areas_own_flow ){
-      res.agg = dplyr::filter(res.agg,lu.from!=lu.to)
-    }
 
     # aggregate results over dataframes
     if(curr.lu.from==lu.from[1]){
