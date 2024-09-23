@@ -18,7 +18,7 @@ downscale_pop(
 \arguments{
 \item{targets}{A dataframe with columns times, pop.type (optional), and value (all targets >= 0)}
 
-\item{times}{a character Vector of time steps for which downscaling is done. The first time-step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time arguments in targets.}
+\item{times}{A character vector of time steps for downscaling. The first time step must be present in \code{targets}. If \code{NULL}, times are derived from unique values in \code{targets}. Default is \code{NULL}.}
 
 \item{xmat}{A dataframe of explanatory variables with columns ns, ks and value.   Defaults to NULL.
 \code{xmat} and \code{betas} have to be provided for each
@@ -28,11 +28,11 @@ downscale_pop(
 \code{xmat} and \code{betas} have to be provided for each
 \code{pop.type} in \code{targets}.}
 
-\item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
+\item{xmat.coltypes}{A vector \code{ks}, with each element being either "static", "dynamic", or "projected". Determines how different columns in \code{xmat} are treated during the downscaling process.}
 
-\item{xmat.proj}{dataframe with columns times (character), ns (character), ks (character), value (numeric) must be present for each xmat.coltype specified as projected}
+\item{xmat.proj}{A dataframe with projections. Includes columns: \code{times} (character), \code{ns} (character), \code{ks} (character), and \code{value} (numeric). Required for each \code{xmat.coltype} specified as projected.}
 
-\item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
+\item{xmat.dyn.fun}{A function providing updates for dynamic xmat columns. Takes as arguments \code{res}, \code{curr.areas}, \code{priors}, \code{xmat.proj} and must return a dataframe with \verb{ns x ks(dynamic)} columns.}
 
 \item{options}{A list with solver options. Call \code{\link{downscale_control_pop}} for default options
 and for more detail.}

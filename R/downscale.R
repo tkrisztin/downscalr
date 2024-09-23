@@ -1,29 +1,26 @@
-#' Downscaling of land-use (change) data
+#' Downscaling of Land-Use (Change) Data
 #'
-#' @param targets A dataframe including the columns: times (character), lu.from (character, optional), lu.to (character) and value (numeric) (all targets >= 0)
-#' @param start.areas  A dataframe containing the starting areas with columns lu.from (character, optional), ns (character) and value (numeric), with ns being the IDs of the grid to downscale to and all areas >= 0 and with sum(areas) >= sum(targets).
-#' @param times a character Vector of time steps for which downscaling is done. The first time-step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time arguments in targets.
-#' @param xmat A dataframe containing the explanatory variables for the econometric priors with columns ns (character), ks (character) and value (numeric). Defaults to NULL.
-#' Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
-#' \code{lu.from} and \code{lu.to} in \code{targets}.
-#' @param betas A dataframe of coefficients with columns ks (character), lu.from (character, optional), lu.to (character) and value (numeric). Defaults to NULL.
-#' Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
-#' \code{lu.from} and \code{lu.to} in \code{targets}.
-#' @param areas.update.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to
-#' @param xmat.coltypes ks vector, each can be either "static", "dynamic", or "projected"
-#' @param xmat.proj dataframe with columns times (character), ns (character), ks (character), value (numeric) must be present for each xmat.coltype specified as projected
-#' @param xmat.dyn.fun function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns
-#' @param priors A dataframe with exogeneous priors containing the columns times (character, optional), ns (character), lu.from (character, optional), lu.to, (character) and value (numeric, with value >= 0); An optional
-#' column \code{weight} (numeric, 0 <= weight <= 1) can be supplied. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous priors in the downscaling.
-#' @param restrictions A dataframe with columns ns (character), lu.from (character, optional), lu.to (character) and value (numeric). Values must be either zero or one. If restrictions are one, the MNL function is set to zero.
-#' @param options A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.
+#' Performs downscaling of land-use data over specified time steps using a range of inputs, including targets, areas, explanatory variables, and priors. It supports both bias correction and non-targeted downscaling methods.
 #'
-#' @details Given \code{p} targets matches either the projections from an MNL-type model or exogenous priors.
+#' @param targets A dataframe with mandatory columns: `times` (character), `lu.to` (character), and `value` (numeric, all values >= 0). Optional column: `lu.from` (character). Represents the downscaling targets for each time step and land-use change.
+#' @param start.areas A dataframe with starting areas. Includes mandatory columns: `ns` (character, representing grid IDs for downscaling) and `value` (numeric, all areas >= 0 and sum of areas >= sum of targets). Optional column: `lu.from` (character).
+#' @param times A character vector of time steps for downscaling. The first time step must be present in `targets`. If `NULL`, times are derived from unique values in `targets`. Default is `NULL`.
+#' @param xmat A dataframe with explanatory variables for econometric priors. Includes columns: `ns` (character), `ks` (character), and `value` (numeric). If `NULL`, a placeholder is used. Default is `NULL`.
+#' @param betas A dataframe of coefficients for econometric priors. Includes columns: `ks` (character), `lu.to` (character), and `value` (numeric). Optional column: `lu.from` (character). If `NULL`, a placeholder is used. Default is `NULL`.
+#' @param areas.update.fun A function providing an update for dynamic xmat columns. Takes as arguments `res`, `curr.areas`, `priors`, `xmat.proj` and must return a dataframe with columns `ns`, `ks`, and `value`. Defaults to `areas.sum_to()`, which sums over `lu.to`.
+#' @param xmat.coltypes A vector `ks`, with each element being either "static", "dynamic", or "projected". Determines how different columns in `xmat` are treated during the downscaling process.
+#' @param xmat.proj A dataframe with projections. Includes columns: `times` (character), `ns` (character), `ks` (character), and `value` (numeric). Required for each `xmat.coltype` specified as projected.
+#' @param xmat.dyn.fun A function providing updates for dynamic xmat columns. Takes as arguments `res`, `curr.areas`, `priors`, `xmat.proj` and must return a dataframe with `ns x ks(dynamic)` columns.
+#' @param priors A dataframe with exogenous priors. Includes columns: `times` (character, optional), `ns` (character), `lu.from` (character, optional), `lu.to` (character), and `value` (numeric, >= 0). An optional `weight` column (numeric, 0 <= weight <= 1) can be supplied to adjust the influence of exogenous priors.
+#' @param restrictions A dataframe with restrictions. Includes columns: `ns` (character), `lu.from` (character, optional), `lu.to` (character), and `value` (numeric). Values must be either zero or one, indicating whether the MNL function should be set to zero for certain combinations.
+#' @param options A list of solver options. Use `\link{downscale_control}` to obtain default options and for more detailed information.
 #'
-#' @return A list containing
-#' * \code{out.res} Dataframe with columns times, ns, lu.from, lu.to & value (area allocation)
-#' * \code{out.solver} A list of the solver output
-#' * \code{ds.inputs} A list documenting all the downscale function inputs
+#' @details The function integrates various data inputs to match `p` targets using either projections from an MNL-type model or exogenous priors. Appropriate input validation and preprocessing are performed before downscaling.
+#'
+#' @return A list containing three elements:
+#' * `out.res`: A dataframe with columns `times`, `ns`, `lu.from`, `lu.to`, and `value` (area allocation).
+#' * `out.solver`: A list detailing the solver output.
+#' * `ds.inputs`: A list documenting all the inputs used in the downscaling function.
 #'
 #' @export downscale
 #' @import nloptr
@@ -81,7 +78,7 @@ downscale = function(targets,
   err.txt = options$err.txt
   targets = complete_targets(targets)
   start.areas = complete_areas(start.areas)
-  target_area_check(targets,start.areas)
+  target_area_check(targets, start.areas)
   if (is.null(xmat)) {
     xmat = data.frame(ns = unique(start.areas$ns),
                       ks = PLCHOLD_K,
@@ -145,7 +142,9 @@ downscale = function(targets,
     # Extract priors
     if (any(priors$times == curr.time)) {
       curr.priors = filter(priors, times == curr.time) %>% dplyr::select(-times)
-    } else {curr.priors = NULL}
+    } else {
+      curr.priors = NULL
+    }
 
     # BUGFIX TK: added check for missing targets for every time iteration
     #   This was before only done for the initial period, resulting in missed
@@ -239,22 +238,26 @@ downscale = function(targets,
     out.res = out.res %>% dplyr::filter(lu.to != PLCHOLD_LU)
   }
 
-  ret <- list(out.res = out.res,
-              out.solver = out.solver,
-              ds.inputs = list(
-                targets = targets,
-                start.areas = start.areas,
-                xmat = xmat,
-                betas = betas,
-                areas.update.fun = areas.update.fun,
-                xmat.coltypes = xmat.coltypes,
-                xmat.proj = xmat.proj,
-                xmat.dyn.fun = xmat.dyn.fun,
-                priors = priors,
-                restrictions = restrictions,
-                options = options))
+  ret <- list(
+    out.res = out.res,
+    out.solver = out.solver,
+    ds.inputs = list(
+      targets = targets,
+      start.areas = start.areas,
+      xmat = xmat,
+      betas = betas,
+      areas.update.fun = areas.update.fun,
+      xmat.coltypes = xmat.coltypes,
+      xmat.proj = xmat.proj,
+      xmat.dyn.fun = xmat.dyn.fun,
+      priors = priors,
+      restrictions = restrictions,
+      options = options
+    )
+  )
 
   class(ret) = "downscalr"
 
   return(ret)
 }
+

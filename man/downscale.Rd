@@ -2,7 +2,7 @@
 % Please edit documentation in R/downscale.R
 \name{downscale}
 \alias{downscale}
-\title{Downscaling of land-use (change) data}
+\title{Downscaling of Land-Use (Change) Data}
 \usage{
 downscale(
   targets,
@@ -20,48 +20,43 @@ downscale(
 )
 }
 \arguments{
-\item{targets}{A dataframe including the columns: times (character), lu.from (character, optional), lu.to (character) and value (numeric) (all targets >= 0)}
+\item{targets}{A dataframe with mandatory columns: \code{times} (character), \code{lu.to} (character), and \code{value} (numeric, all values >= 0). Optional column: \code{lu.from} (character). Represents the downscaling targets for each time step and land-use change.}
 
-\item{start.areas}{A dataframe containing the starting areas with columns lu.from (character, optional), ns (character) and value (numeric), with ns being the IDs of the grid to downscale to and all areas >= 0 and with sum(areas) >= sum(targets).}
+\item{start.areas}{A dataframe with starting areas. Includes mandatory columns: \code{ns} (character, representing grid IDs for downscaling) and \code{value} (numeric, all areas >= 0 and sum of areas >= sum of targets). Optional column: \code{lu.from} (character).}
 
-\item{times}{a character Vector of time steps for which downscaling is done. The first time-step has to be present in \code{targets}. Defaults to NULL, in which case the times are the unique time arguments in targets.}
+\item{times}{A character vector of time steps for downscaling. The first time step must be present in \code{targets}. If \code{NULL}, times are derived from unique values in \code{targets}. Default is \code{NULL}.}
 
-\item{xmat}{A dataframe containing the explanatory variables for the econometric priors with columns ns (character), ks (character) and value (numeric). Defaults to NULL.
-Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
-\code{lu.from} and \code{lu.to} in \code{targets}.}
+\item{xmat}{A dataframe with explanatory variables for econometric priors. Includes columns: \code{ns} (character), \code{ks} (character), and \code{value} (numeric). If \code{NULL}, a placeholder is used. Default is \code{NULL}.}
 
-\item{betas}{A dataframe of coefficients with columns ks (character), lu.from (character, optional), lu.to (character) and value (numeric). Defaults to NULL.
-Either \code{xmat} and \code{betas} or \code{priors} have to be provided for each combination of
-\code{lu.from} and \code{lu.to} in \code{targets}.}
+\item{betas}{A dataframe of coefficients for econometric priors. Includes columns: \code{ks} (character), \code{lu.to} (character), and \code{value} (numeric). Optional column: \code{lu.from} (character). If \code{NULL}, a placeholder is used. Default is \code{NULL}.}
 
-\item{areas.update.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj, must return dataframe with columns ns, ks & value defaults to areas.sum_to() which sums over lu.to}
+\item{areas.update.fun}{A function providing an update for dynamic xmat columns. Takes as arguments \code{res}, \code{curr.areas}, \code{priors}, \code{xmat.proj} and must return a dataframe with columns \code{ns}, \code{ks}, and \code{value}. Defaults to \code{areas.sum_to()}, which sums over \code{lu.to}.}
 
-\item{xmat.coltypes}{ks vector, each can be either "static", "dynamic", or "projected"}
+\item{xmat.coltypes}{A vector \code{ks}, with each element being either "static", "dynamic", or "projected". Determines how different columns in \code{xmat} are treated during the downscaling process.}
 
-\item{xmat.proj}{dataframe with columns times (character), ns (character), ks (character), value (numeric) must be present for each xmat.coltype specified as projected}
+\item{xmat.proj}{A dataframe with projections. Includes columns: \code{times} (character), \code{ns} (character), \code{ks} (character), and \code{value} (numeric). Required for each \code{xmat.coltype} specified as projected.}
 
-\item{xmat.dyn.fun}{function providing update for dynamic xmat columns, must take as arguments res, curr.areas, priors, xmat.proj must return ns x ks(dynamic) columns}
+\item{xmat.dyn.fun}{A function providing updates for dynamic xmat columns. Takes as arguments \code{res}, \code{curr.areas}, \code{priors}, \code{xmat.proj} and must return a dataframe with \verb{ns x ks(dynamic)} columns.}
 
-\item{priors}{A dataframe with exogeneous priors containing the columns times (character, optional), ns (character), lu.from (character, optional), lu.to, (character) and value (numeric, with value >= 0); An optional
-column \code{weight} (numeric, 0 <= weight <= 1) can be supplied. If both econometric and exogeneous priors are specified this value gives the weight of the exogeneous priors in the downscaling.}
+\item{priors}{A dataframe with exogenous priors. Includes columns: \code{times} (character, optional), \code{ns} (character), \code{lu.from} (character, optional), \code{lu.to} (character), and \code{value} (numeric, >= 0). An optional \code{weight} column (numeric, 0 <= weight <= 1) can be supplied to adjust the influence of exogenous priors.}
 
-\item{restrictions}{A dataframe with columns ns (character), lu.from (character, optional), lu.to (character) and value (numeric). Values must be either zero or one. If restrictions are one, the MNL function is set to zero.}
+\item{restrictions}{A dataframe with restrictions. Includes columns: \code{ns} (character), \code{lu.from} (character, optional), \code{lu.to} (character), and \code{value} (numeric). Values must be either zero or one, indicating whether the MNL function should be set to zero for certain combinations.}
 
-\item{options}{A list with solver options. Call \code{\link{downscale_control}} for default options and for more detail.}
+\item{options}{A list of solver options. Use \verb{\link{downscale_control}} to obtain default options and for more detailed information.}
 }
 \value{
-A list containing
+A list containing three elements:
 \itemize{
-\item \code{out.res} Dataframe with columns times, ns, lu.from, lu.to & value (area allocation)
-\item \code{out.solver} A list of the solver output
-\item \code{ds.inputs} A list documenting all the downscale function inputs
+\item \code{out.res}: A dataframe with columns \code{times}, \code{ns}, \code{lu.from}, \code{lu.to}, and \code{value} (area allocation).
+\item \code{out.solver}: A list detailing the solver output.
+\item \code{ds.inputs}: A list documenting all the inputs used in the downscaling function.
 }
 }
 \description{
-Downscaling of land-use (change) data
+Performs downscaling of land-use data over specified time steps using a range of inputs, including targets, areas, explanatory variables, and priors. It supports both bias correction and non-targeted downscaling methods.
 }
 \details{
-Given \code{p} targets matches either the projections from an MNL-type model or exogenous priors.
+The function integrates various data inputs to match \code{p} targets using either projections from an MNL-type model or exogenous priors. Appropriate input validation and preprocessing are performed before downscaling.
 }
 \examples{
 require(dplyr)
