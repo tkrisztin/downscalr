@@ -209,7 +209,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
         # Calculate residual areas -  res_areas
         res_areas = curr.areas
         if (any(!error_ind)) {
-          res_areas = res_areas - rowSums(out.mu[,!error_ind])
+          res_areas = res_areas - rowSums(out.mu[,!error_ind,drop=FALSE])
         }
 
         # Loop over remaining targets
