@@ -187,24 +187,16 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
       } else {
         eval_grad_f = NULL
       }
-      redo = TRUE; countr = 1;
-      while (redo) {
-        res.x = nloptr::nloptr(x0 = x0,
-                               eval_f = sqr_diff.mnl,
-                               eval_grad_f = eval_grad_f,
-                               lb = rep(exp(-options$MAX_EXP),length(x0)),
-                               ub = rep(exp(options$MAX_EXP),length(x0)),
-                               opts=opts,
-                               mu = priors.mu,areas = curr.areas,targets = curr.targets,
-                               restrictions = restr.mat,cutoff = options$cutoff)
-        if (res.x$objective < options$max_diff || countr > options$redo) {
-          redo =FALSE
-          res.x$par = res.x$solution
-        } else {
-          countr = countr + 1
-          x0 = res.x$solution
-        }
-      }
+      res.x = nloptr::nloptr(x0 = x0,
+                             eval_f = sqr_diff.mnl,
+                             eval_grad_f = eval_grad_f,
+                             lb = rep(exp(-options$MAX_EXP),length(x0)),
+                             ub = rep(exp(options$MAX_EXP),length(x0)),
+                             opts=opts,
+                             mu = priors.mu,areas = curr.areas,targets = curr.targets,
+                             restrictions = restr.mat,cutoff = options$cutoff)
+      res.x$par = res.x$solution
+
       out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
 
       # If differences are still too large, do individual logit models boosted by grid search

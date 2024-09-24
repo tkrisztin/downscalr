@@ -9,7 +9,6 @@
 #' @param maxeval The maximum number of evaluations the solver will perform, limiting computational effort. Default is \code{1600}.
 #' @param MAX_EXP Sets the numerical cutoff to prevent extremely high values in the Multinomial Logit (MNL) function. Default is \code{log(.Machine$double.xmax)}.
 #' @param cutoff An optional cutoff in the share of a pixel to avoid MNL values close to zero. Default is \code{0}.
-#' @param redo The maximum number of estimation repeats to correct for potential convergence errors. Default is \code{2}.
 #' @param max_diff The threshold for acceptable difference to targets. If exceeded, the estimation is redone. Default is \code{1.0e-8}.
 #' @param ref_class_adjust_threshold The threshold for adjusting the reference class in the MNL. If the implied target share for the reference class is below this, additional areas are created for numerical stability and removed after solving. Default is \code{1.0e-8}.
 #' @param err.txt An optional error message for debugging purposes. Empty by default.
@@ -32,11 +31,11 @@
 downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_SBPLX",
                                   xtol_rel = 1.0e-20,xtol_abs = 1.0e-20,maxeval = 1600,
                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
-                                  redo = 2,max_diff = 1.0e-8,ref_class_adjust_threshold = 1.0e-8,
+                                  max_diff = 1.0e-8,ref_class_adjust_threshold = 1.0e-8,
                              err.txt = "") {
   if (!solve_fun %in% c("solve_biascorr","solve_notarget")) {stop("solve_fun not correctly specified.")}
   return(list(solve_fun = solve_fun,algorithm = algorithm,xtol_rel = xtol_rel,xtol_abs = xtol_abs,
-              maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,redo = redo,
+              maxeval = maxeval,MAX_EXP = MAX_EXP,cutoff = cutoff,
               max_diff = max_diff,ref_class_adjust_threshold=ref_class_adjust_threshold,
               err.txt = err.txt
   ))
