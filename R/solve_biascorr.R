@@ -205,8 +205,69 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
           x0 = res.x$solution
         }
       }
-
       out.mu = mu.mnl(res.x$solution[1:length(curr.targets)],priors.mu,curr.areas,restr.mat,options$cutoff)
+
+      # If differences are still too large, do individual logit models boosted by grid search
+      if (res.x$objective > options$max_diff) {
+        # Find targets where out.mu deviates more than max_diff from the target
+        error_ind = (curr.targets - colSums(out.mu))^2 > options$max_diff
+        error_targets = curr.targets[error_ind]
+        error_restrictions = restr.mat[,error_ind]
+
+        # Calculate residual areas -  res_areas
+        res_areas = curr.areas
+        if (any(!error_ind)) {
+          res_areas = res_areas - rowSums(out.mu[,!error_ind])
+        }
+
+        # Loop over remaining targets
+        for (ccc in 1:length(error_targets)) {
+          curr_error_target = error_targets[ccc]
+          curr_error_restrictions = error_restrictions[,ccc]
+          curr_error_mu = priors.mu[,names(curr_error_target),drop=FALSE]
+
+          # Do an iterated grid search to find correct scaling coefficient for priors
+          curr_scaling = iterated_grid_search(min_param = -options$MAX_EXP,
+                                              max_param = options$MAX_EXP,
+                                              func = sqr_diff.mnl,
+                                              max_iterations = 10,
+                                              precision_threshold = 1e-3,
+                                              exp_transform = TRUE,
+                                              mu = curr_error_mu,areas = res_areas,
+                                              targets = curr_error_target,
+                                              restrictions = curr_error_restrictions,
+                                              cutoff = options$cutoff)
+
+          # Re-scale prior
+          curr_error_mu = curr_error_mu * curr_scaling$best_param
+
+          # Optimize with scaled priors
+          res.x = nloptr::nloptr(x0 = 1,
+                                 eval_f = sqr_diff.mnl,
+                                 eval_grad_f = eval_grad_f,
+                                 lb = exp(-options$MAX_EXP),
+                                 ub = exp(options$MAX_EXP),
+                                 opts=opts,
+                                 mu = curr_error_mu,areas = res_areas,targets = curr_error_target,
+                                 restrictions = curr_error_restrictions,cutoff = options$cutoff)
+
+          # Calculate areas of current target with mu.mnl
+          curr_error_out.mu =
+            mu.mnl(res.x$solution,
+                   curr_error_mu,res_areas,curr_error_restrictions,
+                   options$cutoff)
+
+          # Add calculated areas to out.mu
+          out.mu[,names(curr_error_target)] = curr_error_out.mu
+
+          # Substract areas from res.areas
+          res_areas = res_areas - curr_error_out.mu
+
+          # Add note to res.x
+          res.x$message = "INDIVIDUAL LOGIT BOOSTED BY GRID SEARCH: Standard optimization failed to converge"
+        }
+      }
+
       if (all(not.zero)) {out.res = out.mu
       } else {out.res[,not.zero] = out.mu}
       out.solver[[curr.lu.from]] = res.x
