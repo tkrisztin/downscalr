@@ -12,7 +12,6 @@ downscale_control(
   maxeval = 1600,
   MAX_EXP = log(.Machine$double.xmax),
   cutoff = 0,
-  redo = 2,
   max_diff = 1e-08,
   ref_class_adjust_threshold = 1e-08,
   err.txt = ""
@@ -32,8 +31,6 @@ downscale_control(
 \item{MAX_EXP}{Sets the numerical cutoff to prevent extremely high values in the Multinomial Logit (MNL) function. Default is \code{log(.Machine$double.xmax)}.}
 
 \item{cutoff}{An optional cutoff in the share of a pixel to avoid MNL values close to zero. Default is \code{0}.}
-
-\item{redo}{The maximum number of estimation repeats to correct for potential convergence errors. Default is \code{2}.}
 
 \item{max_diff}{The threshold for acceptable difference to targets. If exceeded, the estimation is redone. Default is \code{1.0e-8}.}
 
@@ -57,5 +54,5 @@ opts_default = downscale_control()
 # Custom settings
 opts_custom = downscale_control(algorithm = "some_other_algorithm",
                                 xtol_rel = 1e-5, xtol_abs = 1e-5,
-                                maxeval = 2000, redo = 3)
+                                maxeval = 2000)
 }

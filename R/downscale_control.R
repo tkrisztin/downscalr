@@ -27,7 +27,7 @@
 #' # Custom settings
 #' opts_custom = downscale_control(algorithm = "some_other_algorithm",
 #'                                 xtol_rel = 1e-5, xtol_abs = 1e-5,
-#'                                 maxeval = 2000, redo = 3)
+#'                                 maxeval = 2000)
 downscale_control = function(solve_fun = "solve_biascorr",algorithm = "NLOPT_LN_SBPLX",
                                   xtol_rel = 1.0e-20,xtol_abs = 1.0e-20,maxeval = 1600,
                                   MAX_EXP = log(.Machine$double.xmax),cutoff = 0,
