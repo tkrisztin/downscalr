@@ -4,7 +4,7 @@
 \alias{mu.mnl}
 \title{Multinomial logit mean calculation with restrictions and cutoff}
 \usage{
-mu.mnl(x, mu, areas, restrictions = NULL, cutoff = 0)
+mu.mnl(x, mu, areas, restrictions = NULL, cutoff = 0, area.cutoff = FALSE)
 }
 \arguments{
 \item{x}{Bias correction parameters}
@@ -16,6 +16,8 @@ mu.mnl(x, mu, areas, restrictions = NULL, cutoff = 0)
 \item{restrictions}{Optional restrictions. Binary, if 1, the log-odds are set to zero}
 
 \item{cutoff}{Optional, defaults to zero. If set, all log-odds below cutoff are set to zero}
+
+\item{area.cutoff}{Boolean, defaults to FALSE. If TRUE, cutoff triggers based on area instead}
 }
 \value{
 Returns the vector of log-odds times the areas

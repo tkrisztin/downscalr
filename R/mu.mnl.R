@@ -5,18 +5,25 @@
 #' @param areas Vector of areas
 #' @param restrictions Optional restrictions. Binary, if 1, the log-odds are set to zero
 #' @param cutoff Optional, defaults to zero. If set, all log-odds below cutoff are set to zero
+#' @param area.cutoff Boolean, defaults to FALSE. If TRUE, cutoff triggers based on area instead
 #'
 #' @return Returns the vector of log-odds times the areas
 #'
 #' @keywords internal
-mu.mnl = function(x,mu,areas,restrictions = NULL,cutoff = 0) {
+mu.mnl = function(x,mu,areas,restrictions = NULL,cutoff = 0, area.cutoff = FALSE) {
   mu = mu * matrix(x,nrow(mu),ncol(mu),byrow = TRUE)
   if (!is.null(restrictions)) {
     mu[restrictions == 1] = 0
   }
   mu = mu / rowSums(cbind(1,mu))
-  mu[mu<cutoff] = 0
-  mu = mu * areas
+  if (area.cutoff) {
+    mu = mu * areas
+    mu[mu<cutoff] = 0
+  } else {
+    mu[mu<cutoff] = 0
+    mu = mu * areas
+  }
+
   return(mu)
 }
 
