@@ -201,7 +201,7 @@ solve_biascorr.mnl = function(targets,areas,xmat,betas,priors = NULL,restriction
 
       # Check where out.mu deviates more from the target than max_diff
       error_ind = (curr.targets - colSums(out.mu))^2 > options$max_diff
-      # If ayn diff is larger, do individual logit models boosted by grid search
+      # If any diff is larger, do individual logit models boosted by grid search
       if (any(error_ind)) {
         error_targets = curr.targets[error_ind]
         error_restrictions = restr.mat[,error_ind]
